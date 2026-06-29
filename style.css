@@ -104,8 +104,9 @@ svg { display: block; }
 
 .subject--primary .subject__icon {
   flex: 0 0 64px; height: 64px; border-radius: 16px;
-  background: rgba(137,225,3,.14);
-  color: var(--accent);
+  /* svetla dlazdice — realna Seyfor ikona je tribarevna (navy+zelena+fialova),
+     na tmave karte by navy cast splynula; bila dlazdice drzi plnou ctitelnost */
+  background: #fff;
   display: grid; place-items: center;
 }
 .subject--primary .subject__icon svg { width: 34px; height: 34px; }
