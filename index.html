@@ -18,116 +18,99 @@
 <main class="wrap">
 
   <section class="hero">
-    <h1>Jak vám můžeme pomoci?</h1>
-    <p>Najděte produkt, firmu nebo pobočku Seyfor. Hned vám ukážeme správný kontakt i smluvní stranu.</p>
+    <h1>Koho nebo co hledáte?</h1>
+    <p>Napište jméno, firmu, produkt, IČO nebo město. Hned vám ukážeme, co dál: zavolat, zkopírovat údaje, nebo navigovat.</p>
   </section>
 
-  <!-- JEDNO vyhledavaci pole nad celou hierarchii -->
+  <!-- JEDEN univerzalni akcne-vyhledavaci vstup -->
   <section class="search-wrap" aria-label="Hledání">
-    <div class="search">
+    <div class="search" id="searchBox">
       <span class="search__icon" id="searchIcon" aria-hidden="true"></span>
       <input id="searchInput" class="search__input" type="search"
-             placeholder="Hledat produkt, firmu, IČ nebo pobočku"
+             placeholder="Jan Novák · iDoklad · Seyfor Solutions · 01572377 · Praha"
              autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search"
-             aria-label="Hledat produkt, firmu, IČ nebo pobočku">
+             role="combobox" aria-expanded="false" aria-controls="sugList" aria-autocomplete="list"
+             aria-label="Hledat osobu, firmu, produkt, IČO nebo pobočku">
       <button class="search__clear" id="searchClear" type="button" aria-label="Vymazat hledání" hidden>&times;</button>
     </div>
-    <p class="search__empty" id="searchEmpty" hidden>Nic neodpovídá. Zkuste jiný název, IČ nebo město.</p>
+    <p class="search__hint" id="searchHint" aria-live="polite"></p>
+    <!-- Naseptavac seskupeny PO KATEGORIICH -->
+    <div class="sug" id="sugList" role="listbox" aria-label="Návrhy" hidden></div>
   </section>
 
-  <!-- HIERARCHIE SUBJEKTU — vse na jedne obrazovce, inline akordeony -->
-  <section class="subjects" id="subjects" aria-label="Subjekty a produkty skupiny Seyfor">
-    <div id="subjPrimary"></div>
-    <div class="subjects__secondary" id="subjSecondary"></div>
-    <div class="subjects__tertiary-wrap" id="subjTertiaryWrap">
-      <p class="subjects__group-label">Další značky skupiny</p>
-      <div class="subjects__tertiary" id="subjTertiary"></div>
-    </div>
-  </section>
+  <!-- Vysledkova karta (akcni) -->
+  <section id="result" class="result" aria-live="polite" aria-label="Výsledek" hidden></section>
 
-  <!-- VRSTVA POBOCEK (sekundarni) -->
-  <section class="branches" id="pobocky" aria-label="Pobočky a adresy">
-    <div class="branches__head">
-      <div class="branches__intro">
-        <h2 class="branches__title">Pobočky a adresy</h2>
-        <p class="branches__sub">Fyzická místa skupiny. Na jedné adrese může sídlet více subjektů. Smluvní stranu a IČ drží vždy firma, ne adresa.</p>
-      </div>
-      <div class="lens" role="tablist" aria-label="Zobrazení poboček">
-        <button class="lens__btn is-active" id="lensCity" role="tab" aria-selected="true" type="button">Podle místa</button>
-        <button class="lens__btn" id="lensCompany" role="tab" aria-selected="false" type="button">Podle firmy</button>
-      </div>
+  <!-- PROCHAZECI VRSTVA (kdo nehleda, projde) -->
+  <section class="browse" id="browse" aria-label="Procházení">
+
+    <div class="browse__primary" id="browsePrimary"></div>
+
+    <div class="browse__block">
+      <p class="browse__label">Další subjekty skupiny</p>
+      <div class="browse__row" id="browseEntities"></div>
     </div>
-    <p class="branches__count" id="branchCount"></p>
-    <div id="branchList"></div>
-    <p class="search__empty" id="branchEmpty" hidden>Žádná pobočka neodpovídá hledání.</p>
+
+    <div class="browse__block">
+      <p class="browse__label">Produkty Seyfor</p>
+      <div class="browse__grid" id="browseBrands"></div>
+    </div>
+
+    <div class="browse__block">
+      <div class="browse__head">
+        <p class="browse__label">Pobočky</p>
+        <span class="browse__count" id="branchCount"></span>
+      </div>
+      <div class="browse__row" id="browseBranches"></div>
+    </div>
+
+    <div class="browse__block browse__block--quiet">
+      <p class="browse__label">Další cesty</p>
+      <div class="quiet" id="quietEntries"></div>
+    </div>
+
   </section>
 
 </main>
 
-<!-- Paticka — most znacka -> firma -->
+<!-- Paticka - tichy pravni most -->
 <footer class="site-foot">
   <div class="site-foot__inner">
-    <div class="site-foot__provider" id="footProvider">
+    <div class="site-foot__provider">
       Provozovatel webu: <strong>Seyfor, a. s.</strong>
     </div>
     <img src="assets/seyfor-logo-white.png" alt="Seyfor"
          onerror="this.replaceWith(Object.assign(document.createElement('span'),{textContent:'SEYFOR',style:'color:#fff;font-weight:700;letter-spacing:2px'}))">
   </div>
-  <!-- Ticha pravni disambiguacni veta (Deloitte-style). PLACEHOLDER zneni —
-       finalni copy dotahne Ridley. Konkretni firma + ICO se cerpa z lookup dat. -->
   <p class="site-foot__legal" id="footLegal"></p>
 </footer>
 
-<!-- Modal: poptavkovy formular (moment pravdy) -->
-<div class="modal-backdrop" id="modal">
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-    <div class="modal__head">
-      <h3 id="modalTitle">Nezávazná poptávka</h3>
-      <button class="modal__close" id="modalClose" aria-label="Zavřít">&times;</button>
-    </div>
-    <div class="modal__body" id="modalBody"></div>
+<!-- Overlay: "Zobrazit velke" (ukazat na recepci) -->
+<div class="bigview" id="bigview" role="dialog" aria-modal="true" aria-labelledby="bigviewTitle" hidden>
+  <div class="bigview__inner">
+    <button class="bigview__close" id="bigviewClose" type="button" aria-label="Zavřít zvětšené zobrazení">&times;</button>
+    <p class="bigview__kicker">Fakturační údaje</p>
+    <h2 class="bigview__title" id="bigviewTitle"></h2>
+    <div class="bigview__fields" id="bigviewFields"></div>
+    <p class="bigview__hint">Ukažte na recepci. Zavřete tlačítkem nahoře nebo klávesou Esc.</p>
   </div>
 </div>
 
 <script src="data.js"></script>
 <script>
 /* =======================================================================
-   Seyfor kontaktni sekce — aplikacni logika prototypu (CZ only)
-   Vizualni hierarchie subjektu: primarni / sekundarni / terciarni.
+   Seyfor kontaktni sekce - AKCNE-VYHLEDAVACI model (CZ only)
+   Jeden vstup rozpozna typ (jmeno / znacka / firma / ICO / mesto) a vrati
+   kartu s AKCNIM tlacitkem (Volat / Kopirovat / Navigovat). Zadny lead form.
    Vse cte z window.SEYFOR_DATA (data.js). Zadny hardcode udaju zde.
    ======================================================================= */
 (function () {
   const D = window.SEYFOR_DATA;
-  const H = D.HIERARCHY;
-  const POWERED = '<span class="powered"><span class="powered__dot" aria-hidden="true"></span>Powered by Seyfor</span>';
 
-  /* ---- PLACEHOLDER copy (finalni zneni dotahne Ridley, K-CRE) -----------
-     Ulric resi umisteni / vahu / styl, ne finalni slova. */
-  const COPY = {
-    // endorsement na terciarnich brandech (Visma-style "part of")
-    endorse: "Součást skupiny Seyfor",
-    // ticha pravni veta v paticce (Deloitte-style disambiguace)
-    legalLead: "Seyfor je skupina samostatných právních osob.",
-    legalLinkLabel: "Právní informace a fakturační údaje"
-  };
-
-  const footProv = document.getElementById("footProvider");
-  const modal    = document.getElementById("modal");
-  const modalBody= document.getElementById("modalBody");
-
-  /* ---- Ikony — dve vrstvy ------------------------------------------------
-     1) BRANDOVE: realne Seyfor ikony (oficialni sada SEYFOR_icons / SeyFonticon).
-        Tribarevne ilustracni glyphy v oficialni Seyfor ikonove palete:
-        zelena #89E103, navy #023444, fialova #884DFF (+ bila). Inline SVG,
-        prevod z oficialnich PDF (pdftocairo), ID namespacovane kvuli kolizim.
-        Kanonicka sada ulozena v _knowledge/brand/icons/seyfor/.
-     2) UI OVLADACE: monochromaticke linkove glyphy v brand tokenech
-        (currentColor + --accent). Sipka, chevron, fajfka, kopirovat — ciste
-        rozhrani, ne brandova ikonografie. SeyFonticon je multicolor/layered
-        font (ilustracni glyphy = fragmenty pres mnoho codepointu), takze pro
-        tyto UI ovladace nema cisty monochrom; zustavaji v brand tokenech.   */
+  /* ---- Ikony ------------------------------------------------------------
+     1) BRANDOVE: realne tribarevne Seyfor ikony (oficialni sada).
+     2) UI OVLADACE: monochrom linkove glyphy v brand tokenech (currentColor). */
   const ICONS = {
-    /* -- realne Seyfor brandove ikony (multicolor, z oficialni sady) -- */
     solutions: '<svg class="seyicon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 100 100"><defs><clipPath id="solutions-clip-0"><path clip-rule="nonzero" d="M 5 9.1875 L 94.535156 9.1875 L 94.535156 90.640625 L 5 90.640625 Z M 5 9.1875 "/></clipPath><clipPath id="solutions-clip-1"><path clip-rule="nonzero" d="M 0 16 L 60 16 L 60 81.640625 L 0 81.640625 Z M 0 16 "/></clipPath><clipPath id="solutions-clip-2"><path clip-rule="nonzero" d="M 29 0.1875 L 89.535156 0.1875 L 89.535156 66 L 29 66 Z M 29 0.1875 "/></clipPath><clipPath id="solutions-clip-3"><rect x="0" y="0" width="90" height="82"/></clipPath><g id="solutions-source-5" clip-path="url(#solutions-clip-3)"><g clip-path="url(#solutions-clip-1)"><path fill-rule="nonzero" fill="rgb(0.784314%, 20.392157%, 26.666667%)" fill-opacity="1" d="M 49.726562 64.332031 L 48.507812 55.71875 C 46.550781 54.882812 44.707031 53.796875 43.023438 52.488281 L 34.945312 55.71875 C 34.601562 55.898438 34.199219 55.933594 33.832031 55.816406 C 33.460938 55.703125 33.148438 55.445312 32.964844 55.101562 L 26.410156 43.71875 C 25.898438 42.792969 26 42.074219 26.714844 41.5625 L 33.570312 36.183594 C 33.453125 35.113281 33.402344 34.035156 33.417969 32.957031 C 33.402344 31.878906 33.453125 30.800781 33.570312 29.726562 L 26.714844 24.34375 C 26.546875 24.230469 26.402344 24.082031 26.296875 23.90625 C 26.191406 23.734375 26.117188 23.539062 26.089844 23.335938 C 26.0625 23.132812 26.074219 22.925781 26.128906 22.730469 C 26.183594 22.53125 26.28125 22.347656 26.410156 22.1875 L 29.914062 16.105469 L 25.175781 16.105469 C 24.792969 16.09375 24.421875 16.234375 24.140625 16.492188 C 23.855469 16.75 23.679688 17.109375 23.652344 17.496094 L 22.433594 26.113281 C 20.488281 26.96875 18.648438 28.054688 16.949219 29.339844 L 8.871094 26.105469 C 8.527344 25.925781 8.125 25.890625 7.753906 26.003906 C 7.382812 26.121094 7.070312 26.378906 6.886719 26.71875 L 0.335938 38.101562 C 0.203125 38.261719 0.109375 38.445312 0.0546875 38.640625 C 0 38.839844 -0.015625 39.046875 0.015625 39.25 C 0.0429688 39.453125 0.113281 39.644531 0.21875 39.820312 C 0.328125 39.992188 0.46875 40.144531 0.640625 40.257812 L 7.496094 45.644531 C 7.378906 46.714844 7.328125 47.792969 7.34375 48.875 C 7.328125 49.949219 7.378906 51.027344 7.496094 52.097656 L 0.640625 57.480469 C -0.078125 57.992188 -0.175781 58.710938 0.335938 59.632812 L 6.886719 71.015625 C 7.070312 71.363281 7.382812 71.617188 7.753906 71.730469 C 8.125 71.847656 8.527344 71.8125 8.871094 71.632812 L 16.949219 68.40625 C 18.628906 69.714844 20.476562 70.796875 22.433594 71.632812 L 23.652344 80.25 C 23.679688 80.632812 23.855469 80.992188 24.140625 81.25 C 24.421875 81.511719 24.792969 81.648438 25.175781 81.640625 L 38.28125 81.640625 C 38.664062 81.648438 39.035156 81.511719 39.320312 81.25 C 39.605469 80.992188 39.777344 80.632812 39.804688 80.25 L 41.027344 71.640625 C 42.972656 70.78125 44.816406 69.699219 46.515625 68.414062 L 54.589844 71.640625 C 54.933594 71.816406 55.335938 71.851562 55.707031 71.738281 C 56.074219 71.625 56.386719 71.367188 56.570312 71.023438 L 59.621094 65.722656 L 51.25 65.722656 C 50.867188 65.734375 50.496094 65.59375 50.214844 65.335938 C 49.929688 65.078125 49.757812 64.714844 49.726562 64.332031 "/></g><path fill-rule="nonzero" fill="rgb(0.784314%, 20.392157%, 26.666667%)" fill-opacity="1" d="M 49.726562 41.109375 C 51.753906 43.222656 54.53125 44.433594 57.445312 44.480469 L 62.816406 40.261719 C 63.53125 39.75 63.632812 39.03125 63.121094 38.109375 L 56.566406 26.722656 C 56.382812 26.378906 56.074219 26.125 55.699219 26.007812 C 55.332031 25.894531 54.929688 25.929688 54.585938 26.109375 L 46.992188 29.144531 C 46.292969 31.195312 46.179688 33.40625 46.664062 35.519531 C 47.144531 37.632812 48.207031 39.570312 49.722656 41.105469 "/><g clip-path="url(#solutions-clip-2)"><path fill-rule="nonzero" fill="rgb(53.329468%, 30.198669%, 100%)" fill-opacity="1" d="M 88.894531 41.566406 L 82.035156 36.183594 C 82.15625 35.109375 82.207031 34.03125 82.1875 32.957031 C 82.210938 31.875 82.15625 30.796875 82.035156 29.726562 L 88.894531 24.34375 C 89.609375 23.832031 89.710938 23.117188 89.199219 22.191406 L 82.648438 10.808594 C 82.464844 10.464844 82.152344 10.207031 81.78125 10.09375 C 81.414062 9.976562 81.011719 10.011719 80.667969 10.191406 L 72.589844 13.417969 C 70.902344 12.113281 69.0625 11.027344 67.101562 10.191406 L 65.878906 1.582031 C 65.851562 1.195312 65.679688 0.839844 65.394531 0.578125 C 65.113281 0.320312 64.746094 0.179688 64.363281 0.1875 L 51.25 0.1875 C 50.867188 0.179688 50.496094 0.320312 50.214844 0.578125 C 49.929688 0.835938 49.757812 1.195312 49.726562 1.582031 L 48.511719 10.1875 C 46.566406 11.046875 44.726562 12.132812 43.027344 13.417969 L 34.945312 10.1875 C 34.601562 10.011719 34.199219 9.976562 33.828125 10.089844 C 33.460938 10.203125 33.148438 10.460938 32.964844 10.804688 L 29.90625 16.105469 L 38.28125 16.105469 C 38.664062 16.09375 39.035156 16.234375 39.320312 16.492188 C 39.605469 16.75 39.777344 17.113281 39.808594 17.496094 L 41.027344 26.113281 C 42.980469 26.949219 44.824219 28.03125 46.511719 29.339844 L 46.996094 29.148438 C 47.632812 27.304688 48.726562 25.65625 50.171875 24.359375 C 51.613281 23.054688 53.359375 22.148438 55.246094 21.714844 C 57.132812 21.28125 59.097656 21.335938 60.957031 21.878906 C 62.8125 22.417969 64.507812 23.425781 65.875 24.808594 C 66.957031 25.863281 67.8125 27.128906 68.386719 28.53125 C 68.964844 29.933594 69.25 31.441406 69.226562 32.960938 C 69.222656 36.019531 68.015625 38.953125 65.871094 41.113281 C 63.726562 43.277344 60.820312 44.496094 57.789062 44.496094 C 57.667969 44.496094 57.550781 44.484375 57.429688 44.484375 L 55.949219 45.644531 C 56.074219 46.71875 56.128906 47.796875 56.117188 48.875 C 56.136719 49.953125 56.085938 51.03125 55.964844 52.105469 L 62.820312 57.488281 C 63.53125 58.003906 63.632812 58.722656 63.128906 59.644531 L 59.625 65.726562 L 64.363281 65.726562 C 64.746094 65.738281 65.117188 65.597656 65.402344 65.339844 C 65.683594 65.082031 65.859375 64.722656 65.886719 64.339844 L 67.109375 55.726562 C 69.054688 54.867188 70.890625 53.78125 72.589844 52.492188 L 80.667969 55.722656 C 81.011719 55.898438 81.414062 55.9375 81.785156 55.820312 C 82.152344 55.707031 82.464844 55.449219 82.652344 55.105469 L 89.203125 43.71875 C 89.332031 43.5625 89.425781 43.378906 89.480469 43.179688 C 89.535156 42.984375 89.550781 42.777344 89.523438 42.574219 C 89.492188 42.371094 89.421875 42.175781 89.316406 42.003906 C 89.207031 41.828125 89.066406 41.683594 88.898438 41.566406 "/></g><path fill-rule="nonzero" fill="rgb(53.729248%, 88.238525%, 1.179504%)" fill-opacity="1" d="M 62.824219 57.484375 L 55.964844 52.097656 C 56.085938 51.027344 56.136719 49.949219 56.117188 48.871094 C 56.136719 47.792969 56.085938 46.714844 55.964844 45.640625 L 57.445312 44.480469 C 54.480469 44.382812 51.667969 43.128906 49.601562 40.976562 C 47.535156 38.824219 46.378906 35.949219 46.375 32.953125 C 46.359375 31.65625 46.570312 30.367188 46.996094 29.140625 L 46.515625 29.335938 C 44.832031 28.027344 42.988281 26.941406 41.03125 26.105469 L 39.8125 17.496094 C 39.785156 17.109375 39.613281 16.75 39.328125 16.488281 C 39.042969 16.230469 38.671875 16.09375 38.289062 16.101562 L 29.910156 16.101562 L 26.40625 22.1875 C 25.898438 23.105469 26 23.824219 26.710938 24.339844 L 33.570312 29.722656 C 33.449219 30.796875 33.398438 31.875 33.417969 32.953125 C 33.398438 34.03125 33.449219 35.109375 33.570312 36.179688 L 26.710938 41.5625 C 25.996094 42.074219 25.894531 42.792969 26.40625 43.714844 L 32.960938 55.101562 C 33.148438 55.445312 33.457031 55.703125 33.828125 55.816406 C 34.199219 55.933594 34.601562 55.898438 34.945312 55.71875 L 43.023438 52.488281 C 44.707031 53.796875 46.550781 54.882812 48.511719 55.71875 L 49.726562 64.335938 C 49.757812 64.71875 49.929688 65.078125 50.214844 65.335938 C 50.496094 65.597656 50.867188 65.734375 51.25 65.722656 L 59.625 65.722656 L 63.128906 59.636719 C 63.257812 59.480469 63.351562 59.296875 63.40625 59.101562 C 63.460938 58.902344 63.476562 58.695312 63.445312 58.492188 C 63.417969 58.289062 63.347656 58.09375 63.238281 57.921875 C 63.132812 57.746094 62.988281 57.597656 62.824219 57.484375 "/></g></defs><g clip-path="url(#solutions-clip-0)"><use xlink:href="#solutions-source-5" transform="matrix(1, 0, 0, 1, 5, 9)"/></g></svg>',
     products:  '<svg class="seyicon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 100 100"><path fill-rule="nonzero" fill="rgb(0.784314%, 20.392157%, 26.666667%)" fill-opacity="1" d="M 49.210938 30.148438 L 10 30.148438 L 10 94.917969 L 74.96875 94.917969 L 74.96875 30.148438 Z M 49.210938 30.148438 "/><path fill-rule="nonzero" fill="rgb(0.784314%, 20.392157%, 26.666667%)" fill-opacity="1" d="M 30.894531 12.671875 L 30.894531 38.5625 L 54.53125 38.5625 L 54.53125 55.175781 L 90.511719 55.175781 L 90.511719 12.671875 Z M 30.894531 12.671875 "/><path fill-rule="nonzero" fill="rgb(53.329468%, 30.198669%, 100%)" fill-opacity="1" d="M 10.007812 30.148438 L 74.96875 30.148438 L 74.96875 54.652344 L 10.007812 54.652344 Z M 10.007812 30.148438 "/><path fill-rule="nonzero" fill="rgb(53.729248%, 88.238525%, 1.179504%)" fill-opacity="1" d="M 22.136719 63.464844 L 50.324219 63.464844 L 50.324219 70.828125 L 22.136719 70.828125 Z M 22.136719 63.464844 "/><path fill-rule="nonzero" fill="rgb(53.729248%, 88.238525%, 1.179504%)" fill-opacity="1" d="M 22.136719 76.355469 L 50.324219 76.355469 L 50.324219 83.71875 L 22.136719 83.71875 Z M 22.136719 76.355469 "/><path fill-rule="nonzero" fill="rgb(53.329468%, 30.198669%, 100%)" fill-opacity="1" d="M 30.898438 5.242188 L 90.507812 5.242188 L 90.507812 19.453125 L 30.898438 19.453125 Z M 30.898438 5.242188 "/><path fill-rule="nonzero" fill="rgb(53.729248%, 88.238525%, 1.179504%)" fill-opacity="1" d="M 54.960938 39.308594 L 58.117188 36.152344 L 68.351562 46.382812 L 65.195312 49.539062 Z M 54.960938 39.308594 "/><path fill-rule="nonzero" fill="rgb(53.729248%, 88.238525%, 1.179504%)" fill-opacity="1" d="M 54.960938 46.386719 L 65.191406 36.15625 L 68.347656 39.3125 L 58.117188 49.542969 Z M 54.960938 46.386719 "/></svg>',
     building:  '<svg class="seyicon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 100 100"><path fill-rule="nonzero" fill="rgb(53.329468%, 30.198669%, 100%)" fill-opacity="1" d="M 14.113281 13.265625 L 14.113281 86.734375 L 48.261719 86.734375 L 48.261719 39.742188 L 61.964844 39.742188 L 61.964844 13.265625 Z M 14.113281 13.265625 "/><path fill-rule="nonzero" fill="rgb(53.729248%, 88.238525%, 1.179504%)" fill-opacity="1" d="M 60.367188 38.820312 L 85.886719 38.820312 L 85.886719 86.734375 L 60.367188 86.734375 Z M 60.367188 38.820312 "/><path fill-rule="nonzero" fill="rgb(0.784314%, 20.392157%, 26.666667%)" fill-opacity="1" d="M 44.417969 38.820312 L 61.964844 38.820312 L 61.964844 86.734375 L 44.417969 86.734375 Z M 44.417969 38.820312 "/><path fill-rule="nonzero" fill="rgb(53.729248%, 88.238525%, 1.179504%)" fill-opacity="1" d="M 25.160156 23.992188 L 34.222656 23.992188 L 34.222656 33.097656 L 25.160156 33.097656 Z M 25.160156 23.992188 "/><path fill-rule="nonzero" fill="rgb(53.729248%, 88.238525%, 1.179504%)" fill-opacity="1" d="M 42.710938 23.992188 L 51.777344 23.992188 L 51.777344 33.097656 L 42.710938 33.097656 Z M 42.710938 23.992188 "/><path fill-rule="nonzero" fill="rgb(0.784314%, 20.392157%, 26.666667%)" fill-opacity="1" d="M 68.816406 49.171875 L 77.882812 49.171875 L 77.882812 58.28125 L 68.816406 58.28125 Z M 68.816406 49.171875 "/><path fill-rule="nonzero" fill="rgb(0.784314%, 20.392157%, 26.666667%)" fill-opacity="1" d="M 25.160156 39.976562 L 34.222656 39.976562 L 34.222656 49.085938 L 25.160156 49.085938 Z M 25.160156 39.976562 "/><path fill-rule="nonzero" fill="rgb(0.784314%, 20.392157%, 26.666667%)" fill-opacity="1" d="M 25.160156 56.125 L 34.222656 56.125 L 34.222656 65.230469 L 25.160156 65.230469 Z M 25.160156 56.125 "/><path fill-rule="nonzero" fill="rgb(0.784314%, 20.392157%, 26.666667%)" fill-opacity="1" d="M 68.90625 64.90625 L 77.96875 64.90625 L 77.96875 74.011719 L 68.90625 74.011719 Z M 68.90625 64.90625 "/></svg>',
@@ -135,13 +118,16 @@
     email:     '<svg class="seyicon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 100 100"><path fill-rule="nonzero" fill="rgb(1.179504%, 19.999695%, 27.059937%)" fill-opacity="1" d="M 14 42.5625 L 23.105469 48.976562 L 23.105469 35.738281 Z M 14 42.5625 "/><path fill-rule="nonzero" fill="rgb(1.179504%, 19.999695%, 27.059937%)" fill-opacity="1" d="M 78.390625 49.378906 L 87.71875 42.5625 L 78.390625 35.738281 Z M 78.390625 49.378906 "/><path fill-rule="nonzero" fill="rgb(1.179504%, 19.999695%, 27.059937%)" fill-opacity="1" d="M 50.859375 13 L 41.648438 19.824219 L 60.074219 19.824219 Z M 50.859375 13 "/><path fill-rule="nonzero" fill="rgb(53.729248%, 88.238525%, 1.179504%)" fill-opacity="1" d="M 23.105469 50.425781 L 46.25 65.292969 L 55.46875 65.292969 L 78.394531 50.757812 L 78.394531 19.824219 L 23.105469 19.824219 Z M 23.105469 50.425781 "/><path fill-rule="nonzero" fill="rgb(53.329468%, 30.198669%, 100%)" fill-opacity="1" d="M 55.46875 65.292969 L 46.253906 65.292969 L 14.003906 42.554688 L 14.003906 88.03125 L 87.71875 88.03125 L 87.71875 42.554688 Z M 55.46875 65.292969 "/><path fill-rule="nonzero" fill="rgb(100%, 100%, 100%)" fill-opacity="1" d="M 32.339844 28.199219 L 69.695312 28.199219 L 69.695312 33.632812 L 32.339844 33.632812 Z M 32.339844 28.199219 "/><path fill-rule="nonzero" fill="rgb(100%, 100%, 100%)" fill-opacity="1" d="M 33.890625 38.929688 L 68.140625 38.929688 L 68.140625 44.363281 L 33.890625 44.363281 Z M 33.890625 38.929688 "/><path fill-rule="nonzero" fill="rgb(100%, 100%, 100%)" fill-opacity="1" d="M 40.105469 49.664062 L 61.925781 49.664062 L 61.925781 55.097656 L 40.105469 55.097656 Z M 40.105469 49.664062 "/><path fill-rule="nonzero" fill="rgb(1.179504%, 19.999695%, 27.059937%)" fill-opacity="1" d="M 46.253906 65.292969 L 14 88.03125 L 87.71875 88.03125 L 55.46875 65.292969 Z M 46.253906 65.292969 "/></svg>',
     handshake: '<svg class="seyicon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 100 100"><defs><clipPath id="handshake-clip-0"><path clip-rule="nonzero" d="M 9.179688 15.042969 L 90.671875 15.042969 L 90.671875 90.8125 L 9.179688 90.8125 Z M 9.179688 15.042969 "/></clipPath><clipPath id="handshake-clip-1"><path clip-rule="nonzero" d="M 40 0.0429688 L 81.671875 0.0429688 L 81.671875 41 L 40 41 Z M 40 0.0429688 "/></clipPath><clipPath id="handshake-clip-2"><path clip-rule="nonzero" d="M 0.179688 0.0429688 L 41 0.0429688 L 41 41 L 0.179688 41 Z M 0.179688 0.0429688 "/></clipPath><clipPath id="handshake-clip-3"><path clip-rule="nonzero" d="M 5 5 L 76 5 L 76 75.8125 L 5 75.8125 Z M 5 5 "/></clipPath><clipPath id="handshake-clip-4"><rect x="0" y="0" width="82" height="76"/></clipPath><g id="handshake-source-5" clip-path="url(#handshake-clip-4)"><g clip-path="url(#handshake-clip-1)"><path fill-rule="nonzero" fill="rgb(53.729248%, 88.238525%, 1.179504%)" fill-opacity="1" d="M 75.886719 40.710938 C 84.074219 30.992188 83.597656 16.445312 74.421875 7.269531 C 65.25 -1.902344 50.65625 -2.359375 40.914062 5.875 C 41.441406 6.308594 41.941406 6.769531 42.445312 7.269531 Z M 75.886719 40.710938 "/></g><g clip-path="url(#handshake-clip-2)"><path fill-rule="nonzero" fill="rgb(53.329468%, 30.198669%, 100%)" fill-opacity="1" d="M 40.9375 5.894531 C 31.195312 -2.339844 16.605469 -1.878906 7.433594 7.292969 C -1.71875 16.445312 -2.199219 30.992188 5.96875 40.710938 L 39.410156 7.292969 C 39.910156 6.792969 40.414062 6.332031 40.9375 5.894531 "/></g><g clip-path="url(#handshake-clip-3)"><path fill-rule="nonzero" fill="rgb(0.784314%, 20.392157%, 26.666667%)" fill-opacity="1" d="M 75.886719 40.710938 L 42.445312 7.292969 C 41.941406 6.792969 41.441406 6.332031 40.914062 5.894531 C 40.394531 6.332031 39.890625 6.792969 39.386719 7.292969 L 5.96875 40.710938 C 6.425781 41.257812 6.910156 41.78125 7.433594 42.304688 L 40.9375 75.8125 L 74.445312 42.304688 C 74.96875 41.78125 75.449219 41.257812 75.90625 40.710938 Z M 75.886719 40.710938 "/></g></g></defs><g clip-path="url(#handshake-clip-0)"><use xlink:href="#handshake-source-5" transform="matrix(1, 0, 0, 1, 9, 15)"/></g></svg>',
     press:     '<svg class="seyicon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 100 100"><path fill-rule="nonzero" fill="rgb(53.729248%, 88.238525%, 1.179504%)" fill-opacity="1" d="M 73.523438 47.847656 L 73.523438 65.527344 L 50.210938 65.527344 L 50.210938 81.339844 L 74.007812 81.339844 L 93.003906 89.785156 L 93.003906 47.847656 Z M 73.523438 47.847656 "/><path fill-rule="nonzero" fill="rgb(53.329468%, 30.198669%, 100%)" fill-opacity="1" d="M 7 13.457031 L 7 78.652344 L 36.53125 65.527344 L 50.210938 65.527344 L 50.210938 47.847656 L 73.519531 47.847656 L 73.519531 13.457031 Z M 7 13.457031 "/><path fill-rule="nonzero" fill="rgb(0.784314%, 20.392157%, 26.666667%)" fill-opacity="1" d="M 50.210938 47.851562 L 73.523438 47.851562 L 73.523438 65.527344 L 50.210938 65.527344 Z M 50.210938 47.851562 "/><path fill-rule="nonzero" fill="rgb(53.729248%, 88.238525%, 1.179504%)" fill-opacity="1" d="M 18.632812 41.292969 L 39.144531 41.292969 L 39.144531 47.085938 L 18.632812 47.085938 Z M 18.632812 41.292969 "/><path fill-rule="nonzero" fill="rgb(53.729248%, 88.238525%, 1.179504%)" fill-opacity="1" d="M 18.632812 29.714844 L 53.285156 29.714844 L 53.285156 35.503906 L 18.632812 35.503906 Z M 18.632812 29.714844 "/></svg>',
-    /* -- monochrom UI ovladace (linkove, brand tokeny, currentColor) -- */
-    copy:      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>',
-    check:     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m4 12 5 5L20 6"/></svg>',
-    arrow:     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>',
-    chevron:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>',
-    search:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg>',
-    pin:       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.3 7-11a7 7 0 1 0-14 0c0 4.7 7 11 7 11Z"/><circle cx="12" cy="10" r="2.6"/></svg>'
+    /* -- monochrom UI ovladace -- */
+    copy:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>',
+    check:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m4 12 5 5L20 6"/></svg>',
+    arrow:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>',
+    chevron: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>',
+    search:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg>',
+    pin:     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.3 7-11a7 7 0 1 0-14 0c0 4.7 7 11 7 11Z"/><circle cx="12" cy="10" r="2.6"/></svg>',
+    callglyph: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.6 10.8a15.5 15.5 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.24 11.4 11.4 0 0 0 3.5.56 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1 11.4 11.4 0 0 0 .56 3.5 1 1 0 0 1-.25 1z"/></svg>',
+    navglyph:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11 22 2l-9 19-2-8-8-2Z"/></svg>',
+    back:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m11 18-6-6 6-6"/></svg>'
   };
   function ico(name) { return ICONS[name] || ""; }
 
@@ -150,203 +136,324 @@
     return String(s).replace(/[&<>"]/g, c =>
       ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   }
-  function val(v) {
-    if (v === null || v === undefined || v === "")
-      return '<span class="placeholder">doplníme k 1.1.2027</span>';
-    return esc(v);
+  function isEmpty(v) { return v === null || v === undefined || v === ""; }
+  function ph(label) { return '<span class="placeholder">' + esc(label) + '</span>'; }
+  function val(v, label) { return isEmpty(v) ? ph(label || "doplníme k 1.1.2027") : esc(v); }
+  function telHref(num) { return "tel:" + String(num).replace(/[^+0-9]/g, ""); }
+  function lower(s) { return (s || "").toLowerCase(); }
+  // diakritika-insensitive normalizace pro hledani
+  function norm(s) {
+    return (s || "").toString().normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
   }
 
-  // ---- render tabulky identifikacnich udaju -----------------------------
-  function idTableHTML(ent) {
-    const assume = ent.assumption
-      ? ' <span class="assumption-flag">předpoklad k ověření</span>' : "";
-    return ''
-      + '<table class="idtable"><tbody>'
-      + '<tr><th>IČO</th><td>' + val(ent.ico) + assume + '</td></tr>'
-      + '<tr><th>DIČ</th><td>' + val(ent.dic) + '</td></tr>'
-      + '<tr><th>Sídlo</th><td>' + val(ent.sidlo) + '</td></tr>'
-      + '<tr><th>Datová schránka</th><td>' + val(ent.datovka) + '</td></tr>'
-      + '</tbody></table>';
-  }
-  function entityPlain(ent, brandName) {
-    const f = v => (v == null || v === "") ? "doplníme k 1.1.2027" : v;
-    const lines = [];
-    if (brandName) lines.push("Provozovatelem značky " + brandName + " je " + ent.name + ", součást skupiny Seyfor.");
-    lines.push("Smluvní strana: " + ent.name);
-    lines.push("IČO: " + f(ent.ico));
-    lines.push("DIČ: " + f(ent.dic));
-    lines.push("Sídlo: " + f(ent.sidlo));
-    lines.push("Datová schránka: " + f(ent.datovka));
-    return lines.join("\n");
-  }
-
-  // ---- smluvni strana INLINE v karte (bez zbytecneho kliku navic) --------
-  // Daniel: smluvni stranu neschovavej za zbytecne kliky -> IC + udaje rovnou.
-  function partyInlineHTML(ent, brandName) {
-    const sentence = brandName && brandName !== ent.name
-      ? 'Provozovatelem značky <strong>' + esc(brandName) + '</strong> je <strong>'
-        + esc(ent.name) + '</strong>, součást skupiny Seyfor.'
-      : 'Smluvní stranou je <strong>' + esc(ent.name) + '</strong>, součást skupiny Seyfor.';
-    return ''
-      + '<div class="party-inline">'
-      +   '<p class="party__sentence">' + sentence + '</p>'
-      +   idTableHTML(ent)
-      +   '<button class="copy-btn" data-copy="1"><span class="copy-btn__i" aria-hidden="true">' + ico("copy") + '</span>Kopírovat údaje</button>'
-      + '</div>';
-  }
-
-  // ---- kontaktni radky (tap-to-call / tap-to-mail) ----------------------
-  function contactLinesHTML() {
-    return ''
-      + '<div class="contact-lines">'
-      +   '<a class="contact-line" href="tel:+420000000000">'
-      +     '<span class="ci" aria-hidden="true">' + ico("phone") + '</span>'
-      +     '<span>+420 000 000 000<small class="placeholder placeholder--plain">telefon doplníme</small></span></a>'
-      +   '<a class="contact-line" href="mailto:kontakt@seyfor.com">'
-      +     '<span class="ci" aria-hidden="true">' + ico("email") + '</span>'
-      +     '<span>kontakt@seyfor.com<small>napište nám</small></span></a>'
-      + '</div>';
-  }
-
-  // ---- skupinove ucely (M&A, media) na karte matky ----------------------
-  function purposesHTML(keys) {
-    if (!keys || !keys.length) return "";
-    const map = {
-      ma:    { icon: "handshake", label: "Prodej nebo přidružení firmy", key: "ma" },
-      press: { icon: "press",     label: "Pro novináře a média",         key: "press" }
-    };
-    let html = '<div class="purposes"><p class="purposes__label">Skupinové kontakty</p><div class="purposes__row">';
-    keys.forEach(k => {
-      const m = map[k]; if (!m) return;
-      html += '<button class="purpose-chip" data-purpose="' + m.key + '">'
-            +   '<span class="purpose-chip__i" aria-hidden="true">' + ico(m.icon) + '</span>'
-            +   esc(m.label)
-            + '</button>';
-    });
-    html += '</div></div>';
-    return html;
-  }
-
-  // ---- kopirovani udaju (sdilene tlacitko) ------------------------------
-  function wireCopy(btn, ent, brandName) {
-    btn.addEventListener("click", () => {
-      const text = entityPlain(ent, brandName && brandName !== ent.name ? brandName : null);
-      const done = () => {
-        btn.innerHTML = '<span class="copy-btn__i" aria-hidden="true">' + ico("check") + '</span>Zkopírováno';
-        btn.classList.add("is-done");
-        setTimeout(() => {
-          btn.innerHTML = '<span class="copy-btn__i" aria-hidden="true">' + ico("copy") + '</span>Kopírovat údaje';
-          btn.classList.remove("is-done");
-        }, 1800);
-      };
-      if (navigator.clipboard && navigator.clipboard.writeText)
-        navigator.clipboard.writeText(text).then(done).catch(() => fallbackCopy(text, done));
-      else fallbackCopy(text, done);
-    });
-  }
+  const result   = document.getElementById("result");
+  const browse   = document.getElementById("browse");
+  const sugList  = document.getElementById("sugList");
+  const searchInput = document.getElementById("searchInput");
+  const searchClear = document.getElementById("searchClear");
+  const searchHint  = document.getElementById("searchHint");
 
   /* =======================================================================
-     CAST 1 — INLINE AKORDEON SUBJEKTU (vse na jedne obrazovce)
-     Zadny sekvencni drill, zadny samostatny panel. Klik = rozbaleni karty
-     primo v mrizce. Telo nese smluvni stranu + IC + kopirovat + CTA inline.
+     SDILENE STAVEBNI BLOKY KARET
      ======================================================================= */
 
-  // telo karty (rozbaleny obsah akordeonu)
-  function bodyHTML(node, ent, opts) {
+  // jeden fakturacni radek s kopirovanim po poli
+  function fieldRowHTML(label, value, copyLabel) {
+    const empty = isEmpty(value);
+    const v = empty ? ph(copyLabel || "doplníme k 1.1.2027") : esc(value);
+    const btn = empty ? '' :
+      '<button class="fcopy" type="button" data-copy="' + esc(value) + '" aria-label="Kopírovat ' + esc(label) + '">'
+      + '<span class="fcopy__i" aria-hidden="true">' + ico("copy") + '</span></button>';
+    return '<div class="frow"><span class="frow__k">' + esc(label) + '</span>'
+      + '<span class="frow__v">' + v + '</span>' + btn + '</div>';
+  }
+
+  // fakturacni blok firmy (IC/DIC/sidlo/datovka) + akce Kopirovat vse / Zobrazit velke
+  function invoiceBlockHTML(ent, opts) {
     opts = opts || {};
-    const brandForParty = node.brandName && node.brandName !== ent.name ? node.brandName : null;
-    let h = '<div class="acc__body-inner">';
-    if (opts.powered) h += '<div class="acc__powered">' + POWERED + '</div>';
-    if (node.label) h += '<p class="contact-card__label">' + esc(node.label) + '</p>';
-    if (node.desc)  h += '<p class="contact-card__desc">' + esc(node.desc) + '</p>';
-    if (opts.brandChips) h += opts.brandChips;
-    h += partyInlineHTML(ent, brandForParty);
-    h += contactLinesHTML();
-    if (node.purposes) h += purposesHTML(node.purposes);
-    h += '<button class="cta" data-cta="1">Nezávazná poptávka / kontakt</button>';
+    const assume = ent.assumption
+      ? '<span class="assumption-flag">předpoklad k ověření</span>' : "";
+    let h = '<div class="invoice">';
+    h += '<p class="invoice__label">Fakturační údaje' + assume + '</p>';
+    h += fieldRowHTML("IČO", ent.ico, "IČO doplníme");
+    h += fieldRowHTML("DIČ", ent.dic, "DIČ doplníme");
+    h += fieldRowHTML("Sídlo", ent.sidlo, "sídlo doplníme");
+    h += fieldRowHTML("Datová schránka", ent.datovka, "datovku doplníme");
+    h += '<div class="invoice__acts">'
+      +    '<button class="act act--copy" type="button" data-copyall="' + esc(ent.name) + '">'
+      +      '<span class="act__i" aria-hidden="true">' + ico("copy") + '</span>Kopírovat vše</button>'
+      +    '<button class="act act--ghost" type="button" data-bigview="' + esc(ent.name) + '">'
+      +      'Zobrazit velké</button>'
+      + '</div>';
     h += '</div>';
     return h;
   }
 
-  // ozivi telo akordeonu (kopirovat / CTA / skupinove ucely)
-  function wireBody(bodyEl, node, ent) {
-    const copy = bodyEl.querySelector('[data-copy]');
-    if (copy) wireCopy(copy, ent, node.brandName);
-    const cta = bodyEl.querySelector('[data-cta]');
-    if (cta) cta.addEventListener("click", () =>
-      openInquiry({ ent: ent, brandName: node.brandName, ctaTitle: "Nezávazná poptávka: " + node.brandName }));
-    bodyEl.querySelectorAll(".purpose-chip").forEach(chip => {
-      chip.addEventListener("click", () => {
-        const g = D.GROUP[chip.dataset.purpose];
-        const pent = D.ENTITIES[g.entity];
-        const noTruth = chip.dataset.purpose === "press";
-        openInquiry({
-          ent: pent, brandName: pent.name,
-          ctaTitle: chip.dataset.purpose === "ma" ? "Kontakt pro prodej firmy (M&A)" : "Tiskový dotaz",
-          noTruthParty: noTruth, pressNote: noTruth ? g.note : null
-        });
-      });
-    });
-  }
-
-  // rozbal / sbal akordeon (telo se renderuje lazy az pri prvnim otevreni)
-  function setOpen(acc, open) {
-    const head = acc.querySelector(".acc__head");
-    const body = acc.querySelector(".acc__body");
-    acc.classList.toggle("is-open", open);
-    if (head) head.setAttribute("aria-expanded", open ? "true" : "false");
-    if (open && body && !body.dataset.ready) {
-      const node = acc._node, ent = acc._ent;
-      body.innerHTML = bodyHTML(node, ent, { brandChips: acc._brandChips || null, powered: acc._powered || false });
-      wireBody(body, node, ent);
-      body.dataset.ready = "1";
-      updateFooter(ent, node.brandName && node.brandName !== ent.name ? node.brandName : null);
-    }
-  }
-  function toggleAcc(acc) { setOpen(acc, !acc.classList.contains("is-open")); }
-
-  // sdilena konstrukce akordeonu; headHTML se lisi podle urovne
-  function buildAcc(cfg) {
-    const acc = document.createElement("div");
-    acc.className = "acc acc--" + cfg.tier;
-    acc.id = cfg.id;
-    acc.dataset.search = cfg.search || "";
-    acc._node = cfg.node;
-    acc._ent  = cfg.ent;
-    acc._brandChips = cfg.brandChips || null;
-    acc.innerHTML =
-        '<button class="acc__head" type="button" aria-expanded="false" aria-controls="' + cfg.id + '-body">'
-      +   cfg.headHTML
-      + '</button>'
-      + '<div class="acc__body" id="' + cfg.id + '-body" role="region"></div>';
-    acc.querySelector(".acc__head").addEventListener("click", () => toggleAcc(acc));
-    return acc;
-  }
-
-  // teaser "Provozuje: <firma>" na dlazdici (min. kliku — videt uz na dlazdici)
-  function providerTeaser(ent, brandName) {
+  // tichy most: verejne jmeno -> smluvni strana (firma + IC)
+  function bridgeHTML(ent, brandName, opts) {
+    opts = opts || {};
     if (!ent) return "";
-    const same = !brandName || brandName === ent.name;
-    const lead = same ? "Smluvní strana: " : "Provozuje: ";
-    const icoStr = (ent.ico == null || ent.ico === "")
-      ? '<span class="placeholder">IČ doplníme</span>' : 'IČ ' + esc(ent.ico);
-    return '<span class="teaser">' + lead + '<strong>' + esc(ent.name) + '</strong> · ' + icoStr + '</span>';
+    const icoStr = isEmpty(ent.ico) ? ph("IČ doplníme") : "IČ " + esc(ent.ico);
+    const sentence = (brandName && brandName !== ent.name)
+      ? 'Provozovatelem značky <strong>' + esc(brandName) + '</strong> je <strong>' + esc(ent.name) + '</strong>, součást skupiny Seyfor.'
+      : 'Smluvní strana: <strong>' + esc(ent.name) + '</strong> · ' + icoStr;
+    const cls = opts.main ? "bridge bridge--main" : "bridge";
+    return '<p class="' + cls + '">' + sentence + (opts.showIco && brandName ? ' · ' + icoStr : '') + '</p>';
   }
 
-  // jadrove produktove znacky pod Produkty (sdileji smluvni stranu Seyfor Cesko)
-  // -> chips s deep-link kotvou #produkt-<slug>; razeni z BRANDS (CZ Seyfor Cesko)
-  function coreBrandChips() {
-    const core = D.BRANDS.filter(b => b.provider && b.provider.CZ === "seyfor-cesko");
-    let h = '<div class="brandchips"><p class="brandchips__label">Produktové značky pod touto smluvní stranou</p><div class="brandchips__row">';
-    core.forEach(b => {
-      h += '<span class="brandchip" id="produkt-' + esc(b.slug) + '" data-brand="' + esc(b.name.toLowerCase()) + '">'
-        +    '<span class="brandchip__dot" aria-hidden="true"></span>' + esc(b.name)
-        +  '</span>';
+  // plaintext fakturacnich udaju pro "Kopirovat vse"
+  function entityPlain(ent, brandName) {
+    const f = v => isEmpty(v) ? "doplníme k 1.1.2027" : v;
+    const L = [];
+    if (brandName && brandName !== ent.name)
+      L.push("Provozovatelem značky " + brandName + " je " + ent.name + ", součást skupiny Seyfor.");
+    L.push("Smluvní strana: " + ent.name);
+    L.push("IČO: " + f(ent.ico));
+    L.push("DIČ: " + f(ent.dic));
+    L.push("Sídlo: " + f(ent.sidlo));
+    L.push("Datová schránka: " + f(ent.datovka));
+    return L.join("\n");
+  }
+
+  // kontaktni radky (tel / mail) - akcni
+  function contactLineCall(num, sample, subLabel) {
+    if (isEmpty(num))
+      return '<div class="cline cline--ph"><span class="cline__i" aria-hidden="true">' + ico("phone") + '</span>'
+        + '<span class="cline__t">' + ph("telefon doplníme") + '</span></div>';
+    const sub = subLabel ? '<small>' + esc(subLabel) + '</small>' : '';
+    const tag = sample ? '<span class="sample-tag">ukázková data</span>' : '';
+    return '<a class="cline" href="' + telHref(num) + '"><span class="cline__i" aria-hidden="true">' + ico("phone") + '</span>'
+      + '<span class="cline__t">' + esc(num) + ' ' + tag + sub + '</span></a>';
+  }
+  function contactLineMail(addr) {
+    if (isEmpty(addr))
+      return '<div class="cline cline--ph"><span class="cline__i" aria-hidden="true">' + ico("email") + '</span>'
+        + '<span class="cline__t">' + ph("e-mail doplníme") + '</span></div>';
+    return '<a class="cline" href="mailto:' + esc(addr) + '"><span class="cline__i" aria-hidden="true">' + ico("email") + '</span>'
+      + '<span class="cline__t">' + esc(addr) + '</span></a>';
+  }
+
+  // obal karty
+  function cardShell(kicker, title, inner, opts) {
+    opts = opts || {};
+    const sample = opts.sample ? '<span class="sample-tag sample-tag--head">ukázková data</span>' : '';
+    return '<article class="card' + (opts.cls ? ' ' + opts.cls : '') + '">'
+      + '<button class="card__back" type="button" id="cardBack"><span aria-hidden="true">' + ico("back") + '</span>Zpět na přehled</button>'
+      + '<p class="card__kicker">' + esc(kicker) + sample + '</p>'
+      + '<h2 class="card__title" id="cardTitle" tabindex="-1">' + esc(title) + '</h2>'
+      + inner
+      + '</article>';
+  }
+
+  /* =======================================================================
+     RENDERERY KARET (primarni prvek = AKCNI tlacitko)
+     ======================================================================= */
+
+  // UC1 - VOLAT: osoba -> recepce pobocky (ne osobni linka)
+  function renderPerson(p) {
+    const div = p.division ? D.DIVISIONS[p.division] : null;
+    const entKey = div ? div.entity : p.entity;
+    const ent = D.ENTITIES[entKey];
+    const br = D.BRANCHES.find(b => b.id === p.branch);
+    const place = br ? (br.city + (br.label ? " · " + br.label : "")) : "";
+    let inner = '<p class="card__meta">'
+      + esc(p.team) + (place ? ' &middot; ' + esc(place) : '') + '</p>';
+    // AKCE: volat recepci
+    if (br && !isEmpty(br.recepce)) {
+      inner += '<a class="act act--call" href="' + telHref(br.recepce) + '">'
+        + '<span class="act__i" aria-hidden="true">' + ico("callglyph") + '</span>'
+        + 'Volat recepci ' + esc(br.label || br.city) + '</a>';
+      inner += '<p class="act-note">' + esc(br.recepce)
+        + (br.recepceSample ? ' <span class="sample-tag">ukázková linka</span>' : '')
+        + ' &middot; voláte recepci pobočky, ne osobní linku.</p>';
+    } else {
+      inner += '<div class="act act--call act--disabled">' + ph("recepční linku doplníme") + '</div>';
+    }
+    inner += bridgeHTML(ent, null);
+    return cardShell("Osoba", p.name, inner, { sample: true });
+  }
+
+  // UC2 - KOPIROVAT: firma -> fakturacni blok + kopirovat + zobrazit velke
+  function renderEntity(entKey, o) {
+    o = o || {};
+    const ent = D.ENTITIES[entKey];
+    let inner = "";
+    if (o.desc) inner += '<p class="card__meta">' + esc(o.desc) + '</p>';
+    if (o.brandName) inner += bridgeHTML(ent, o.brandName);
+    inner += invoiceBlockHTML(ent);
+    return cardShell(o.kicker || "Firma", o.title || ent.name, inner);
+  }
+
+  // UC2 - ZNACKA: produkt -> provozovatel + fakturace + podpora (smerovka)
+  function renderBrand(b) {
+    const provKey = (b.provider.CZ || b.provider.SK);
+    const ent = D.ENTITIES[provKey];
+    let inner = '<p class="card__meta">' + esc(b.desc) + '</p>';
+    inner += bridgeHTML(ent, b.name, { main: true });
+    inner += invoiceBlockHTML(ent);
+    // podpora znacky = smerovka (bez odkazu ven)
+    inner += '<div class="subblock">'
+      + '<p class="subblock__label">Podpora a reklamace</p>'
+      + '<p class="subblock__desc">Technickou podporu produktu ' + esc(b.name) + ' řeší jeho poskytovatel.</p>'
+      + '<div class="clines">' + contactLineCall(D.SUPPORT.phone) + contactLineMail(D.SUPPORT.email) + '</div>'
+      + '</div>';
+    return cardShell("Produkt · značka", b.name, inner);
+  }
+
+  // ICO - obraceny lookup
+  function renderIco(raw) {
+    const digits = raw.replace(/\s+/g, "");
+    let foundKey = null;
+    Object.keys(D.ENTITIES).forEach(k => {
+      if (D.ENTITIES[k].ico && D.ENTITIES[k].ico === digits) foundKey = k;
     });
-    h += '</div></div>';
-    return h;
+    if (foundKey) {
+      const ent = D.ENTITIES[foundKey];
+      let inner = '<div class="confirm"><span class="confirm__i" aria-hidden="true">' + ico("check") + '</span>'
+        + '<span>Ano, IČO <strong>' + esc(digits) + '</strong> patří firmě ze skupiny Seyfor.</span></div>';
+      inner += invoiceBlockHTML(ent);
+      return cardShell("IČO · ověření", ent.name, inner);
+    }
+    // nenalezeno -> zachytna sit
+    let inner = '<div class="confirm confirm--no"><span class="confirm__i" aria-hidden="true">' + ico("search") + '</span>'
+      + '<span>IČO <strong>' + esc(digits) + '</strong> v naší skupině nemáme. Možná hledáte jiný subjekt - ozvěte se nám.</span></div>';
+    inner += generalInner();
+    return cardShell("IČO · ověření", "Neznámé IČO", inner);
   }
 
+  // UC3 - NAVIGOVAT: mesto / pobocka -> mapa + navigovat + recepce + obsazeni
+  function mapsLinks(query) {
+    const q = encodeURIComponent(query);
+    const ua = navigator.userAgent || "";
+    const isApple = /iPhone|iPad|iPod|Macintosh|Mac OS X/.test(ua);
+    const google = { label: "Google Maps", href: "https://www.google.com/maps/search/?api=1&query=" + q };
+    const apple  = { label: "Apple Maps",  href: "https://maps.apple.com/?q=" + q };
+    const mapy   = { label: "Mapy.cz",     href: "https://mapy.cz/zakladni?q=" + q };
+    const geo    = { label: "Otevřít v mapě (geo)", href: "geo:0,0?q=" + q };
+    return {
+      primary: isApple ? apple : google,
+      others: [ mapy, isApple ? google : apple, geo ]
+    };
+  }
+  function renderBranch(br) {
+    const place = br.city + (br.label ? " · " + br.label : "");
+    let inner = '<div class="map">'
+      + '<div class="map__grid" aria-hidden="true"></div>'
+      + '<span class="map__pin" aria-hidden="true">' + ico("pin") + '</span>'
+      + '<span class="map__cap">' + esc(place) + '</span></div>';
+    inner += '<p class="card__meta">' + val(br.address, "přesnou adresu doplníme") + '</p>';
+    // AKCE: navigovat
+    const ml = mapsLinks(br.geoQuery || place);
+    inner += '<a class="act act--nav" href="' + esc(ml.primary.href) + '" target="_blank" rel="noopener">'
+      + '<span class="act__i" aria-hidden="true">' + ico("navglyph") + '</span>Navigovat · ' + esc(ml.primary.label) + '</a>';
+    inner += '<div class="navalt"><span class="navalt__lbl">Jiná mapa:</span>'
+      + ml.others.map(o => '<a class="navalt__a" href="' + esc(o.href) + '" target="_blank" rel="noopener">' + esc(o.label) + '</a>').join("")
+      + '</div>';
+    // recepce
+    inner += '<div class="clines">' + contactLineCall(br.recepce, br.recepceSample, "recepce pobočky") + '</div>';
+    // obsazeni (sdilena adresa) + tichy most na firmu
+    const pres = D.BRANCH_PRESENCE.filter(x => x.branch === br.id);
+    if (pres.length) {
+      inner += '<div class="subblock"><p class="subblock__label">Na této adrese sídlí (' + pres.length + ')</p>'
+        + '<p class="subblock__desc">Smluvní stranu a IČO drží firma, ne adresa.</p>';
+      inner += pres.map(presenceRowHTML).join("");
+      inner += '</div>';
+    }
+    return cardShell("Pobočka", place, inner, { sample: br.recepceSample });
+  }
+  function presenceRowHTML(p) {
+    const e = D.ENTITIES[p.entity];
+    const icoStr = isEmpty(e.ico) ? ph("IČ doplníme") : "IČ " + esc(e.ico);
+    const spot = isEmpty(p.spot) ? ph("patro doplníme")
+      : esc(p.spot) + (p.spotSample ? ' <span class="sample-tag">ukázkové</span>' : '');
+    const bridge = p.bridge ? '<span class="pres__bridge">' + esc(p.bridge) + '</span>' : '';
+    return '<div class="pres">'
+      + '<div class="pres__top"><span class="pres__name">' + esc(p.display) + '</span>'
+      + '<span class="entry entry--' + esc(p.entryType) + '">' + esc({divize:"Divize",firma:"Firma",znacka:"Značka"}[p.entryType] || p.entryType) + '</span></div>'
+      + '<div class="pres__meta"><span class="pres__spot">' + spot + '</span>'
+      + '<span class="pres__party">Smluvní strana: <strong>' + esc(e.name) + '</strong> &middot; ' + icoStr + '</span>'
+      + bridge + '</div>'
+      + '</div>';
+  }
+
+  // Kontaktni karta (M&A / media / kariera / podpora / obecny) - JEN kontakt, zadny form
+  function renderContact(cfg) {
+    const ent = cfg.entity ? D.ENTITIES[cfg.entity] : null;
+    let inner = '<p class="card__meta">' + esc(cfg.desc) + '</p>';
+    if (cfg.contactName) inner += '<p class="contact-name">' + esc(cfg.contactName) + '</p>';
+    inner += '<div class="clines">' + contactLineCall(cfg.phone) + contactLineMail(cfg.email) + '</div>';
+    if (cfg.note) inner += '<p class="card-note">' + esc(cfg.note) + '</p>';
+    if (ent) inner += bridgeHTML(ent, null);
+    return cardShell(cfg.kicker || "Kontakt", cfg.label, inner);
+  }
+  function generalInner() {
+    const g = D.GENERAL;
+    let inner = '<p class="card__meta">' + esc(g.desc) + '</p>';
+    inner += '<div class="clines">' + contactLineCall(g.phone) + contactLineMail(g.email) + '</div>';
+    inner += bridgeHTML(D.ENTITIES[g.entity], null);
+    return inner;
+  }
+  function renderGeneral() {
+    return cardShell("Obecný kontakt", D.GENERAL.label, generalInner());
+  }
+  function renderLegal() {
+    const ent = D.ENTITIES[D.LEGAL.operator];
+    let inner = '<p class="card__meta">' + esc(D.LEGAL.desc) + '</p>';
+    inner += '<div class="subblock"><p class="subblock__label">Provozovatel webu</p>';
+    inner += invoiceBlockHTML(ent);
+    inner += '</div>';
+    return cardShell("Právní a smluvní informace", D.LEGAL.label, inner);
+  }
+
+  /* =======================================================================
+     ZOBRAZENI KARTY + navigace zpet
+     ======================================================================= */
+  function showCard(html) {
+    result.innerHTML = html;
+    result.hidden = false;
+    browse.classList.add("is-dim");
+    const back = document.getElementById("cardBack");
+    if (back) back.addEventListener("click", clearCard);
+    wireCard();
+    const title = document.getElementById("cardTitle");
+    if (title) title.focus();
+    result.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+  function clearCard() {
+    result.hidden = true;
+    result.innerHTML = "";
+    browse.classList.remove("is-dim");
+    searchInput.focus();
+  }
+
+  // oziveni akci uvnitr karty (kopirovani po poli, kopirovat vse, zobrazit velke)
+  function wireCard() {
+    result.querySelectorAll("[data-copy]").forEach(btn => {
+      btn.addEventListener("click", () => copyText(btn.dataset.copy, btn));
+    });
+    result.querySelectorAll("[data-copyall]").forEach(btn => {
+      const entKey = Object.keys(D.ENTITIES).find(k => D.ENTITIES[k].name === btn.dataset.copyall);
+      const ent = D.ENTITIES[entKey];
+      btn.addEventListener("click", () => copyText(entityPlain(ent), btn, "Zkopírováno"));
+    });
+    result.querySelectorAll("[data-bigview]").forEach(btn => {
+      const entKey = Object.keys(D.ENTITIES).find(k => D.ENTITIES[k].name === btn.dataset.bigview);
+      btn.addEventListener("click", () => openBigview(D.ENTITIES[entKey]));
+    });
+  }
+
+  // kopirovani s vizualni odezvou
+  function copyText(text, btn, doneLabel) {
+    const restore = btn.innerHTML;
+    const done = () => {
+      btn.classList.add("is-done");
+      btn.innerHTML = '<span class="act__i fcopy__i" aria-hidden="true">' + ico("check") + '</span>' + (doneLabel || "");
+      setTimeout(() => { btn.innerHTML = restore; btn.classList.remove("is-done"); }, 1500);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText)
+      navigator.clipboard.writeText(text).then(done).catch(() => fallbackCopy(text, done));
+    else fallbackCopy(text, done);
+  }
   function fallbackCopy(text, done) {
     const ta = document.createElement("textarea");
     ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
@@ -355,364 +462,299 @@
     document.body.removeChild(ta);
   }
 
-  // ---- moment pravdy: poptavkovy formular -------------------------------
-  function openInquiry(ctx) {
-    const ent = ctx.ent;
-    let truth = "";
-    if (!ctx.noTruthParty) {
-      const sentence = (ctx.brandName && ctx.brandName !== ent.name)
-        ? 'Provozovatelem značky <strong>' + esc(ctx.brandName) + '</strong> je <strong>'
-          + esc(ent.name) + '</strong>, součást skupiny Seyfor.'
-        : 'Smluvní stranou je <strong>' + esc(ent.name) + '</strong>, součást skupiny Seyfor.';
-      truth = ''
-        + '<div class="truth-block">'
-        +   '<p class="truth-block__label">Smluvní strana této poptávky</p>'
-        +   '<p class="party__sentence">' + sentence + '</p>'
-        +   idTableHTML(ent)
-        + '</div>';
-    } else {
-      truth = '<div class="press-note" style="margin-bottom:18px"><strong>Pozor:</strong> '
-        + esc(ctx.pressNote || 'Nejde o fakturační vztah. Tento formulář slouží médiím a tiskovým dotazům.') + '</div>';
-    }
-
-    modalBody.innerHTML = ''
-      + truth
-      + '<div class="form-row"><label>Jméno a příjmení</label><input type="text" placeholder="Vaše jméno"></div>'
-      + '<div class="form-row"><label>Firma</label><input type="text" placeholder="Název firmy"></div>'
-      + '<div class="form-row"><label>E-mail</label><input type="email" placeholder="vas@email.cz"></div>'
-      + '<div class="form-row"><label>Telefon</label><input type="tel" placeholder="+420 …"></div>'
-      + '<div class="form-row"><label>Zpráva</label><textarea placeholder="Co potřebujete vyřešit?"></textarea></div>'
-      + '<button class="cta" id="sendBtn">Odeslat poptávku</button>'
-      + '<p class="form-disclaimer">Prototyp: formulář nic neodesílá. Smluvní strana je zde vidět záměrně a nepřeskočitelně.</p>';
-
-    document.getElementById("modalTitle").textContent = ctx.ctaTitle || "Nezávazná poptávka";
-    const send = document.getElementById("sendBtn");
-    if (send) send.addEventListener("click", () => { alert("Prototyp: poptávka by se odeslala na smluvní stranu " + ent.name + "."); closeModal(); });
-    modal.classList.add("is-open");
+  /* ---- "Zobrazit velke" overlay ---------------------------------------- */
+  const bigview = document.getElementById("bigview");
+  function openBigview(ent) {
+    document.getElementById("bigviewTitle").textContent = ent.name;
+    const f = (label, v) => '<div class="bvf"><span class="bvf__k">' + label + '</span><span class="bvf__v">'
+      + (isEmpty(v) ? '<span class="placeholder">doplníme</span>' : esc(v)) + '</span></div>';
+    document.getElementById("bigviewFields").innerHTML =
+      f("IČO", ent.ico) + f("DIČ", ent.dic) + f("Sídlo", ent.sidlo) + f("Datová schránka", ent.datovka);
+    bigview.hidden = false;
+    document.getElementById("bigviewClose").focus();
   }
-  function closeModal() { modal.classList.remove("is-open"); }
-  document.getElementById("modalClose").addEventListener("click", closeModal);
-  modal.addEventListener("click", e => { if (e.target === modal) closeModal(); });
-  document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
+  function closeBigview() { bigview.hidden = true; }
+  document.getElementById("bigviewClose").addEventListener("click", closeBigview);
+  bigview.addEventListener("click", e => { if (e.target === bigview) closeBigview(); });
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && !bigview.hidden) closeBigview(); });
 
-  // ---- paticka — most znacka -> firma -----------------------------------
-  function updateFooter(ent, brandName) {
-    const footLegal = document.getElementById("footLegal");
-    const legalLink = ' <a href="#pravni-informace" class="site-foot__legal-link">' + esc(COPY.legalLinkLabel) + '</a>.';
+  /* =======================================================================
+     VYHLEDAVACI INDEX + DETEKCE TYPU
+     ======================================================================= */
+  const INDEX = [];
+  // osoby
+  D.PEOPLE.forEach(p => INDEX.push({
+    cat: "Lidé", type: "person", label: p.name,
+    sub: p.team, ref: p, search: norm(p.name + " " + p.team)
+  }));
+  // firmy a divize (subjekty s fakturaci) - z ENTITIES + divize
+  Object.keys(D.DIVISIONS).forEach(k => {
+    const d = D.DIVISIONS[k], e = D.ENTITIES[d.entity];
+    INDEX.push({ cat: "Firmy", type: "division", label: d.display, sub: "Smluvní strana: " + e.name,
+      ref: { divKey: k }, search: norm(d.display + " " + e.name + " " + (e.ico || "")) });
+  });
+  ["seyfor-cesko", "seyfor-as"].forEach(k => {
+    const e = D.ENTITIES[k];
+    INDEX.push({ cat: "Firmy", type: "entity", label: e.name,
+      sub: e.ico ? "IČO " + e.ico : "IČO doplníme", ref: { entKey: k },
+      search: norm(e.name + " " + (e.ico || "")) });
+  });
+  // produkty (znacky)
+  D.BRANDS.forEach(b => INDEX.push({
+    cat: "Produkty", type: "brand", label: b.name, sub: b.desc,
+    ref: b, search: norm(b.name + " " + b.desc)
+  }));
+  // pobocky (jen realne; placeholdery nehledame)
+  D.BRANCHES.filter(b => !b.placeholder).forEach(b => INDEX.push({
+    cat: "Pobočky", type: "branch", label: b.city + (b.label ? " · " + b.label : ""),
+    sub: "Pobočka", ref: b, search: norm(b.city + " " + (b.label || ""))
+  }));
 
-    if (!ent) {
-      footProv.innerHTML = 'Provozovatel webu: <strong>Seyfor, a. s.</strong>';
-      if (footLegal)
-        footLegal.innerHTML = COPY.legalLead
-          + ' Provozovatelem tohoto webu je <strong>Seyfor, a. s.</strong> Smluvní strana se liší podle vybrané služby.'
-          + legalLink;
+  // detekce typu (pro enter bez vyberu navrhu) + hint
+  function detectType(raw) {
+    const q = raw.trim();
+    if (!q) return { type: "empty" };
+    const digits = q.replace(/\s+/g, "");
+    if (/^\d{6,8}$/.test(digits)) return { type: "ico", value: digits };
+    const n = norm(q);
+    // presna / prefixova shoda nad indexem
+    const exact = INDEX.find(i => i.search === n);
+    if (exact) return { type: "match", item: exact };
+    const starts = INDEX.find(i => i.search.indexOf(n) === 0);
+    if (starts) return { type: "match", item: starts };
+    const incl = INDEX.find(i => i.search.indexOf(n) >= 0);
+    if (incl) return { type: "match", item: incl };
+    return { type: "none" };
+  }
+
+  function hintFor(raw) {
+    const d = detectType(raw);
+    if (d.type === "empty") return "";
+    if (d.type === "ico") return "Vypadá to jako IČO - ověříme, jestli patří do skupiny Seyfor.";
+    if (d.type === "match") {
+      const map = { person: "osobu", brand: "produkt", entity: "firmu", division: "divizi", branch: "pobočku" };
+      return "Našli jsme " + (map[d.item.type] || "položku") + ": " + d.item.label + ".";
+    }
+    return "Nenašli jsme přesnou shodu - zkuste jméno, značku, IČO nebo město.";
+  }
+
+  // vyber polozky indexu -> prislusna karta
+  function openItem(item) {
+    closeSug();
+    searchInput.value = item.label;
+    searchClear.hidden = false;
+    if (item.type === "person") showCard(renderPerson(item.ref));
+    else if (item.type === "brand") showCard(renderBrand(item.ref));
+    else if (item.type === "entity") showCard(renderEntity(item.ref.entKey, {}));
+    else if (item.type === "division") {
+      const d = D.DIVISIONS[item.ref.divKey];
+      showCard(renderEntity(d.entity, { kicker: "Divize", title: d.display, desc: d.desc, brandName: d.display }));
+    }
+    else if (item.type === "branch") showCard(renderBranch(item.ref));
+  }
+
+  /* =======================================================================
+     NASEPTAVAC (seskupeny po kategoriich)
+     ======================================================================= */
+  const SUG_ORDER = ["Lidé", "Firmy", "Produkty", "Pobočky"];
+  let sugItems = [];   // ploche, v poradi renderu (pro klavesnici)
+  let sugActive = -1;
+
+  function buildSug(raw) {
+    const n = norm(raw);
+    if (!n) { closeSug(); return; }
+    const hits = INDEX.filter(i => i.search.indexOf(n) >= 0);
+    sugItems = [];
+    if (!hits.length) {
+      sugList.innerHTML = '<div class="sug__empty">Nic neodpovídá. Zkuste jméno, značku, IČO nebo město - nebo využijte přehled níže.</div>';
+      sugList.hidden = false; searchInput.setAttribute("aria-expanded", "true");
       return;
     }
-    const icoStr = (ent.ico == null || ent.ico === "")
-      ? '<span class="placeholder">IČO doplníme k 1.1.2027</span>' : 'IČO ' + esc(ent.ico);
-    const lead = brandName ? 'Provozovatel značky ' + esc(brandName) + ': ' : 'Provozovatel: ';
-    footProv.innerHTML = lead + '<strong>' + esc(ent.name) + '</strong> · ' + icoStr;
-
-    // ticha pravni veta — konkretni smluvni strana z lookup dat (PLACEHOLDER zneni)
-    if (footLegal) {
-      const svc = brandName ? 'služby ' + esc(brandName) : 'této služby';
-      footLegal.innerHTML = COPY.legalLead
-        + ' Provozovatelem ' + svc + ' a smluvní stranou je <strong>' + esc(ent.name)
-        + '</strong>, ' + icoStr + '.'
-        + legalLink;
-    }
-  }
-
-  // sestaveni searchable retezce subjektu
-  function sstr() {
-    return Array.prototype.slice.call(arguments)
-      .filter(Boolean).join(" ").toLowerCase();
-  }
-  function entSearch(ent) { return ent ? sstr(ent.name, ent.ico, ent.dic) : ""; }
-
-  /* ============== CAST 1: build hierarchie (akordeony) ================== */
-
-  // PRIMARNI — hero, rozbaleny rovnou (smart default)
-  (function buildPrimary() {
-    const p = H.primary; p._tier = "primary";
-    const ent = D.ENTITIES[p.key];
-    const head =
-        '<span class="subject__accent" aria-hidden="true"></span>'
-      + '<span class="acc__head-row">'
-      +   '<span class="subject__icon" aria-hidden="true">' + ico(p.icon) + '</span>'
-      +   '<span class="subject__text">'
-      +     '<span class="subject__kicker">Hlavní vstup</span>'
-      +     '<span class="subject__name">' + esc(p.brandName) + '</span>'
-      +     '<span class="subject__label">' + esc(p.label) + '</span>'
-      +     '<span class="subject__desc">' + esc(p.desc) + '</span>'
-      +     providerTeaser(ent, null)
-      +   '</span>'
-      +   '<span class="acc__chev" aria-hidden="true">' + ico("chevron") + '</span>'
-      + '</span>';
-    const acc = buildAcc({
-      id: "subjekt-solutions", tier: "primary", node: p, ent: ent,
-      headHTML: head, search: sstr(p.brandName, p.label, p.desc, entSearch(ent), "solutions software služby")
-    });
-    document.getElementById("subjPrimary").appendChild(acc);
-    setOpen(acc, true);   // smart default: otevreno bez kliku
-  })();
-
-  // SEKUNDARNI — Produkty (Seyfor Cesko, s brand chips) + Skupina (Seyfor a.s.)
-  (function buildSecondary() {
-    const wrap = document.getElementById("subjSecondary");
-    H.secondary.forEach(s => {
-      s._tier = "secondary";
-      const ent = D.ENTITIES[s.key];
-      const isProducts = s.key === "seyfor-cesko";
-      const head =
-          '<span class="subject__icon" aria-hidden="true">' + ico(s.icon) + '</span>'
-        + '<span class="subject__text">'
-        +   '<span class="subject__name">' + esc(s.brandName) + '</span>'
-        +   '<span class="subject__label">' + esc(s.label) + '</span>'
-        +   '<span class="subject__desc">' + esc(s.desc) + '</span>'
-        +   providerTeaser(ent, null)
-        + '</span>'
-        + '<span class="acc__chev" aria-hidden="true">' + ico("chevron") + '</span>';
-      const brandsExtra = isProducts
-        ? D.BRANDS.filter(b => b.provider && b.provider.CZ === "seyfor-cesko").map(b => b.name).join(" ")
-        : "";
-      const acc = buildAcc({
-        id: s.key === "seyfor-as" ? "subjekt-skupina" : "subjekt-produkty",
-        tier: "secondary", node: s, ent: ent, headHTML: head,
-        brandChips: isProducts ? coreBrandChips() : null,
-        search: sstr(s.brandName, s.label, s.desc, entSearch(ent), brandsExtra, s.purposes ? "média tisk prodej firmy m&a akvizice" : "")
-      });
-      wrap.appendChild(acc);
-    });
-  })();
-
-  // TERCIARNI — samostatne znacky = produktove dlazdice s teaserem firmy
-  (function buildTertiary() {
-    const wrap = document.getElementById("subjTertiary");
-    H.tertiary.forEach(t => {
-      t._tier = "tertiary";
-      const ent = D.ENTITIES[t.key];
-      const slug = (t.brandName || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-        .toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-      const head = t.logo
-        ? '<img class="subject__logo" src="' + esc(t.logo) + '" alt="' + esc(t.brandName) + '">'
-        : '<span class="subject__name">' + esc(t.brandName) + '</span>';
-      const endorse = '<span class="subject__endorse">'
-        + '<span class="subject__endorse-dot" aria-hidden="true"></span>' + esc(COPY.endorse) + '</span>';
-      const headHTML =
-          '<span class="acc__chev acc__chev--corner" aria-hidden="true">' + ico("chevron") + '</span>'
-        + head
-        + '<span class="subject__desc">' + esc(t.desc) + '</span>'
-        + providerTeaser(ent, t.brandName)   // teaser: provozujici firma uz na dlazdici
-        + endorse;
-      const acc = buildAcc({
-        id: "produkt-" + slug, tier: "tertiary", node: t, ent: ent, headHTML: headHTML,
-        search: sstr(t.brandName, t.desc, entSearch(ent))
-      });
-      acc._powered = true;
-      wrap.appendChild(acc);
-    });
-  })();
-
-  /* ============== CAST 2: vrstva pobocek ================================ */
-  const branchList  = document.getElementById("branchList");
-  const branchCount = document.getElementById("branchCount");
-  const branchEmpty = document.getElementById("branchEmpty");
-  const ENTRY_LABEL = { divize: "Divize", firma: "Firma", znacka: "Značka" };
-
-  function cityRank(c) { return c === "Praha" ? 0 : c === "Brno" ? 1 : 2; }
-  // razeni: realne pred placeholdery; Praha, Brno, pak ostatni abecedne
-  function sortBranches(list) {
-    return list.slice().sort((a, b) => {
-      if (a.placeholder !== b.placeholder) return a.placeholder ? 1 : -1;
-      const ra = cityRank(a.city), rb = cityRank(b.city);
-      if (ra !== rb) return ra - rb;
-      if (a.city && b.city && a.city !== b.city) return a.city.localeCompare(b.city, "cs");
-      return a.id.localeCompare(b.id);
-    });
-  }
-  function presenceFor(id) { return D.BRANCH_PRESENCE.filter(p => p.branch === id); }
-  function branchSearchStr(br) {
-    const parts = [br.city || "", br.label || ""];
-    presenceFor(br.id).forEach(p => {
-      const e = D.ENTITIES[p.entity];
-      parts.push(p.display, e ? e.name : "", e && e.ico ? e.ico : "");
-    });
-    if (br.placeholder) parts.push("pobočka doplníme");
-    return parts.join(" ").toLowerCase();
-  }
-
-  function presenceRowHTML(p) {
-    const e = D.ENTITIES[p.entity];
-    const icoStr = (e.ico == null || e.ico === "")
-      ? '<span class="placeholder">IČ doplníme</span>' : 'IČ ' + esc(e.ico);
-    const spot = (p.spot == null || p.spot === "")
-      ? '<span class="placeholder">patro doplníme</span>' : esc(p.spot);
-    const bridge = p.bridge ? '<span class="pres__bridge">' + esc(p.bridge) + '</span>' : "";
-    return '<div class="pres">'
-      + '<div class="pres__main">'
-      +   '<span class="pres__name">' + esc(p.display) + '</span>'
-      +   '<span class="entry entry--' + esc(p.entryType) + '">' + esc(ENTRY_LABEL[p.entryType] || p.entryType) + '</span>'
-      + '</div>'
-      + '<div class="pres__meta">'
-      +   '<span class="pres__spot"><span class="pres__pin" aria-hidden="true">' + ico("pin") + '</span>Recepce · ' + spot + '</span>'
-      +   '<span class="pres__party">Smluvní strana: <strong>' + esc(e.name) + '</strong> · ' + icoStr + '</span>'
-      +   bridge
-      + '</div>'
-      + '<button class="pres__cta" data-branch-cta data-entity="' + esc(p.entity) + '" data-display="' + esc(p.display) + '">Kontakt</button>'
-      + '</div>';
-  }
-
-  function branchCardHTML(br) {
-    if (br.placeholder) {
-      return '<div class="branch branch--ph" data-search="' + branchSearchStr(br) + '">'
-        + '<div class="branch__head"><span class="branch__pin" aria-hidden="true">' + ico("pin") + '</span>'
-        +   '<span class="branch__city"><span class="placeholder">Pobočka — doplníme adresu a obsazení</span></span></div>'
-        + '</div>';
-    }
-    const addr = (br.address == null || br.address === "")
-      ? '<span class="placeholder">adresu doplníme</span>' : esc(br.address);
-    const pres = presenceFor(br.id);
-    const rows = pres.map(presenceRowHTML).join("");
-    return '<div class="branch" data-search="' + branchSearchStr(br) + '">'
-      + '<div class="branch__head">'
-      +   '<span class="branch__pin" aria-hidden="true">' + ico("pin") + '</span>'
-      +   '<span class="branch__city">' + esc(br.city) + (br.label ? ' · <span class="branch__label">' + esc(br.label) + '</span>' : '') + '</span>'
-      + '</div>'
-      + '<p class="branch__addr">' + addr + '</p>'
-      + '<p class="branch__note">Na této adrese sídlí ' + pres.length + ' subjekty skupiny. Smluvní stranu (IČ) drží firma, ne adresa.</p>'
-      + '<div class="branch__presence">' + rows + '</div>'
-      + '</div>';
-  }
-
-  function renderBranchesCity() {
-    branchList.innerHTML = sortBranches(D.BRANCHES).map(branchCardHTML).join("");
-    wireBranchCtas();
-  }
-  function renderBranchesCompany() {
-    const byEnt = {};
-    D.BRANCH_PRESENCE.forEach(p => { (byEnt[p.entity] = byEnt[p.entity] || []).push(p); });
     let html = "";
-    Object.keys(byEnt).forEach(k => {
-      const e = D.ENTITIES[k];
-      const icoStr = (e.ico == null || e.ico === "")
-        ? '<span class="placeholder">IČ doplníme</span>' : 'IČ ' + esc(e.ico);
-      const places = byEnt[k].map(p => {
-        const br = D.BRANCHES.find(b => b.id === p.branch);
-        const where = br ? (br.city + (br.label ? ' · ' + br.label : '')) : p.branch;
-        return '<li>' + esc(where) + ' <span class="muted">(cedule: ' + esc(p.display) + ', ' + esc(ENTRY_LABEL[p.entryType] || p.entryType) + ')</span></li>';
-      }).join("");
-      html += '<div class="branch branch--company" data-search="' + sstr(e.name, e.ico) + '">'
-        + '<div class="branch__head"><span class="branch__city">' + esc(e.name) + '</span></div>'
-        + '<p class="branch__addr">Smluvní strana · ' + icoStr + '</p>'
-        + '<ul class="branch__places">' + places + '</ul>'
-        + '<button class="pres__cta" data-branch-cta data-entity="' + esc(k) + '" data-display="' + esc(e.name) + '">Kontakt</button>'
-        + '</div>';
-    });
-    const phCount = D.BRANCHES.filter(b => b.placeholder).length;
-    html += '<p class="branch__note branch__note--ph">Zbývajících ' + phCount + ' poboček zatím nemá vyplněné obsazení — <span class="placeholder">doplníme</span>.</p>';
-    branchList.innerHTML = html;
-    wireBranchCtas();
-  }
-  function wireBranchCtas() {
-    branchList.querySelectorAll("[data-branch-cta]").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const ent = D.ENTITIES[btn.dataset.entity];
-        openInquiry({ ent: ent, brandName: ent.name, ctaTitle: "Kontakt: " + (btn.dataset.display || ent.name) });
+    SUG_ORDER.forEach(cat => {
+      const group = hits.filter(h => h.cat === cat).slice(0, 6);
+      if (!group.length) return;
+      html += '<div class="sug__group"><p class="sug__cat">' + esc(cat) + '</p>';
+      group.forEach(g => {
+        const idx = sugItems.length; sugItems.push(g);
+        html += '<button class="sug__item" type="button" role="option" id="sug-' + idx + '" data-idx="' + idx + '">'
+          + '<span class="sug__main">' + highlight(g.label, raw) + '</span>'
+          + '<span class="sug__sub">' + esc(g.sub) + '</span></button>';
       });
+      html += '</div>';
     });
+    sugList.innerHTML = html;
+    sugList.hidden = false; searchInput.setAttribute("aria-expanded", "true");
+    sugActive = -1;
+    sugList.querySelectorAll(".sug__item").forEach(btn => {
+      btn.addEventListener("click", () => openItem(sugItems[+btn.dataset.idx]));
+    });
+  }
+  function highlight(label, raw) {
+    // zvyrazni primo nad originalem (shodne indexy) -> zadny posun u diakritiky.
+    // Diakritika-insensitivni dotaz se proste nezvyrazni (filtrovani resi norm()).
+    const q = raw.trim().toLowerCase();
+    const low = label.toLowerCase();
+    const at = q ? low.indexOf(q) : -1;
+    if (at >= 0) {
+      return esc(label.slice(0, at)) + '<mark>' + esc(label.slice(at, at + q.length)) + '</mark>' + esc(label.slice(at + q.length));
+    }
+    return esc(label);
+  }
+  function closeSug() {
+    sugList.hidden = true; sugList.innerHTML = "";
+    searchInput.setAttribute("aria-expanded", "false");
+    sugActive = -1; sugItems = [];
+  }
+  function moveSug(dir) {
+    const btns = sugList.querySelectorAll(".sug__item");
+    if (!btns.length) return;
+    sugActive = (sugActive + dir + btns.length) % btns.length;
+    btns.forEach((b, i) => b.classList.toggle("is-active", i === sugActive));
+    const el = btns[sugActive];
+    if (el) { el.scrollIntoView({ block: "nearest" }); searchInput.setAttribute("aria-activedescendant", el.id); }
   }
 
-  let lens = "city";
-  function renderBranches() { lens === "city" ? renderBranchesCity() : renderBranchesCompany(); applySearch(searchInput.value); }
-  (function branchMeta() {
-    const total = D.BRANCHES.length;
-    const real = D.BRANCHES.filter(b => !b.placeholder).length;
-    branchCount.textContent = "Celkem " + total + " poboček · " + real + " s daty (Praha, Rustonka), " + (total - real) + " doplníme.";
+  /* ---- vstupni udalosti ------------------------------------------------- */
+  searchInput.addEventListener("input", () => {
+    const v = searchInput.value;
+    searchClear.hidden = !v;
+    searchHint.textContent = hintFor(v);
+    buildSug(v);
+  });
+  searchInput.addEventListener("keydown", e => {
+    if (e.key === "ArrowDown") { e.preventDefault(); if (sugList.hidden) buildSug(searchInput.value); else moveSug(1); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); moveSug(-1); }
+    else if (e.key === "Enter") {
+      e.preventDefault();
+      if (!sugList.hidden && sugActive >= 0 && sugItems[sugActive]) { openItem(sugItems[sugActive]); return; }
+      submitSearch(searchInput.value);
+    } else if (e.key === "Escape") { closeSug(); }
+  });
+  searchClear.addEventListener("click", () => {
+    searchInput.value = ""; searchClear.hidden = true; searchHint.textContent = "";
+    closeSug(); clearCard();
+  });
+  document.addEventListener("click", e => {
+    if (!e.target.closest(".search-wrap")) closeSug();
+  });
+
+  function submitSearch(raw) {
+    const d = detectType(raw);
+    closeSug();
+    if (d.type === "empty") return;
+    if (d.type === "ico") { showCard(renderIco(d.value)); return; }
+    if (d.type === "match") { openItem(d.item); return; }
+    // fallback: zachytna sit + navrhy
+    let inner = '<p class="card__meta">Pro „' + esc(raw.trim()) + '" jsme nenašli přesnou shodu. Zkuste jméno, značku, IČO nebo město - nebo nám rovnou napište.</p>';
+    inner += generalInner();
+    showCard(cardShell("Nenašli jsme shodu", "Nezařazený dotaz", inner));
+  }
+
+  /* =======================================================================
+     PROCHAZECI VRSTVA
+     ======================================================================= */
+  // primarni dlazdice - Seyfor Solutions
+  (function () {
+    const d = D.DIVISIONS["seyfor-solutions"], e = D.ENTITIES[d.entity];
+    const el = document.getElementById("browsePrimary");
+    el.innerHTML =
+      '<button class="ptile" type="button" id="tileSolutions">'
+      + '<span class="ptile__icon" aria-hidden="true">' + ico("solutions") + '</span>'
+      + '<span class="ptile__text">'
+      +   '<span class="ptile__kicker">Hlavní vstup · divize</span>'
+      +   '<span class="ptile__name">' + esc(d.display) + '</span>'
+      +   '<span class="ptile__desc">' + esc(d.desc) + '</span>'
+      +   '<span class="ptile__bridge">Smluvní strana: <strong>' + esc(e.name) + '</strong> &middot; '
+      +     (isEmpty(e.ico) ? ph("IČ doplníme") : "IČ " + esc(e.ico)) + '</span>'
+      + '</span>'
+      + '<span class="ptile__chev" aria-hidden="true">' + ico("chevron") + '</span>'
+      + '</button>';
+    document.getElementById("tileSolutions").addEventListener("click", () =>
+      showCard(renderEntity(d.entity, { kicker: "Divize", title: d.display, desc: d.desc, brandName: d.display })));
   })();
 
-  const lensCity = document.getElementById("lensCity");
-  const lensCompany = document.getElementById("lensCompany");
-  function setLens(which) {
-    lens = which;
-    lensCity.classList.toggle("is-active", which === "city");
-    lensCompany.classList.toggle("is-active", which === "company");
-    lensCity.setAttribute("aria-selected", which === "city" ? "true" : "false");
-    lensCompany.setAttribute("aria-selected", which === "company" ? "true" : "false");
-    renderBranches();
-  }
-  lensCity.addEventListener("click", () => setLens("city"));
-  lensCompany.addEventListener("click", () => setLens("company"));
-  renderBranchesCity();
+  // dalsi subjekty skupiny
+  (function () {
+    const wrap = document.getElementById("browseEntities");
+    [["seyfor-cesko", "products", "Produkty Seyfor"], ["seyfor-as", "building", "Skupina Seyfor"]].forEach(([k, icon, label]) => {
+      const e = D.ENTITIES[k];
+      const btn = document.createElement("button");
+      btn.className = "etile"; btn.type = "button";
+      btn.innerHTML =
+        '<span class="etile__icon" aria-hidden="true">' + ico(icon) + '</span>'
+        + '<span class="etile__text"><span class="etile__name">' + esc(e.name) + '</span>'
+        + '<span class="etile__sub">' + esc(label) + ' &middot; '
+        + (isEmpty(e.ico) ? ph("IČ doplníme") : "IČ " + esc(e.ico)) + '</span></span>'
+        + '<span class="etile__chev" aria-hidden="true">' + ico("chevron") + '</span>';
+      btn.addEventListener("click", () => showCard(renderEntity(k, { kicker: "Firma" })));
+      wrap.appendChild(btn);
+    });
+  })();
 
-  /* ============== SEARCH (jedno pole nad vsim) ========================= */
-  const searchInput = document.getElementById("searchInput");
-  const searchClear = document.getElementById("searchClear");
-  const searchEmpty = document.getElementById("searchEmpty");
-  const tertWrap    = document.getElementById("subjTertiaryWrap");
+  // produkty (mrizka znacek)
+  (function () {
+    const wrap = document.getElementById("browseBrands");
+    D.BRANDS.forEach(b => {
+      const btn = document.createElement("button");
+      btn.className = "btile"; btn.type = "button";
+      btn.innerHTML = '<span class="btile__dot" aria-hidden="true"></span><span class="btile__name">' + esc(b.name) + '</span>';
+      btn.addEventListener("click", () => showCard(renderBrand(b)));
+      wrap.appendChild(btn);
+    });
+  })();
+
+  // pobocky
+  (function () {
+    const wrap = document.getElementById("browseBranches");
+    const real = D.BRANCHES.filter(b => !b.placeholder);
+    const phCount = D.BRANCHES.length - real.length;
+    real.forEach(b => {
+      const btn = document.createElement("button");
+      btn.className = "brtile"; btn.type = "button";
+      btn.innerHTML = '<span class="brtile__pin" aria-hidden="true">' + ico("pin") + '</span>'
+        + '<span class="brtile__name">' + esc(b.city) + (b.label ? ' &middot; ' + esc(b.label) : '') + '</span>'
+        + '<span class="brtile__act">Navigovat</span>';
+      btn.addEventListener("click", () => showCard(renderBranch(b)));
+      wrap.appendChild(btn);
+    });
+    // placeholder dlazdice (jasne oznacena)
+    const phEl = document.createElement("div");
+    phEl.className = "brtile brtile--ph";
+    phEl.innerHTML = '<span class="placeholder">Dalších ' + phCount + ' poboček doplníme (adresy a recepce)</span>';
+    wrap.appendChild(phEl);
+    document.getElementById("branchCount").textContent =
+      "celkem " + D.BRANCHES.length + " · " + real.length + " s daty, " + phCount + " doplníme";
+  })();
+
+  // tiche vstupy
+  (function () {
+    const wrap = document.getElementById("quietEntries");
+    const items = [
+      { label: D.SUPPORT.label, desc: "Směrovka na podporu značky", run: () => showCard(renderContact({ kicker: "Podpora", label: D.SUPPORT.label, desc: D.SUPPORT.desc, phone: D.SUPPORT.phone, email: D.SUPPORT.email, entity: "seyfor-as" })) },
+      { label: D.GROUP.press.label, desc: "Tiskový kontakt skupiny", run: () => showCard(renderContact({ kicker: "Média", label: D.GROUP.press.label, desc: D.GROUP.press.desc, contactName: D.GROUP.press.contactName, phone: D.GROUP.press.phone, email: D.GROUP.press.email, note: D.GROUP.press.note, entity: D.GROUP.press.entity })) },
+      { label: D.GROUP.ma.label, desc: "Jen kontaktní karta", run: () => showCard(renderContact({ kicker: "M&A", label: D.GROUP.ma.label, desc: D.GROUP.ma.desc, contactName: D.GROUP.ma.contactName, phone: D.GROUP.ma.phone, email: D.GROUP.ma.email, note: D.GROUP.ma.note, entity: D.GROUP.ma.entity })) },
+      { label: D.GROUP.career.label, desc: "Jen kontaktní karta", run: () => showCard(renderContact({ kicker: "Kariéra", label: D.GROUP.career.label, desc: D.GROUP.career.desc, contactName: D.GROUP.career.contactName, phone: D.GROUP.career.phone, email: D.GROUP.career.email, note: D.GROUP.career.note, entity: D.GROUP.career.entity })) },
+      { label: D.LEGAL.label, desc: "Provozovatel a smluvní strany", run: () => showCard(renderLegal()) },
+      { label: D.GENERAL.label, desc: "Záchytná síť", run: () => showCard(renderGeneral()) }
+    ];
+    items.forEach(it => {
+      const btn = document.createElement("button");
+      btn.className = "qtile"; btn.type = "button";
+      btn.innerHTML = '<span class="qtile__text"><span class="qtile__name">' + esc(it.label) + '</span>'
+        + '<span class="qtile__desc">' + esc(it.desc) + '</span></span>'
+        + '<span class="qtile__chev" aria-hidden="true">' + ico("arrow") + '</span>';
+      btn.addEventListener("click", it.run);
+      wrap.appendChild(btn);
+    });
+  })();
+
+  /* ---- paticka - tichy pravni most -------------------------------------- */
   document.getElementById("searchIcon").innerHTML = ico("search");
+  document.getElementById("footLegal").innerHTML =
+    'Seyfor je skupina samostatných právních osob. Provozovatelem tohoto webu je <strong>Seyfor, a. s.</strong> '
+    + 'Smluvní strana se liší podle vybrané služby; konkrétní firmu a IČO ukazujeme vždy na kartě dané služby.';
 
-  function applySearch(raw) {
-    const q = (raw || "").trim().toLowerCase();
-    searchClear.hidden = !q;
-
-    // --- subjekty ---
-    let anySub = false, tertVisible = 0;
-    document.querySelectorAll(".subjects .acc").forEach(acc => {
-      const match = !q || (acc.dataset.search || "").indexOf(q) >= 0;
-      acc.classList.toggle("is-hidden", !match);
-      if (match) {
-        anySub = true;
-        if (acc.classList.contains("acc--tertiary")) tertVisible++;
-        if (q && q.length >= 2) setOpen(acc, true);     // min. kliku: rozbal shodu
-      }
-      if (!q) setOpen(acc, acc.id === "subjekt-solutions"); // reset na default
-    });
-    tertWrap.classList.toggle("is-hidden", q && tertVisible === 0);
-
-    // zvyrazni shodne produktove chips
-    document.querySelectorAll(".brandchip").forEach(c => {
-      c.classList.toggle("is-hit", !!q && (c.dataset.brand || "").indexOf(q) >= 0);
-    });
-
-    // --- pobocky ---
-    let anyBr = false;
-    branchList.querySelectorAll(".branch").forEach(b => {
-      const match = !q || (b.dataset.search || "").indexOf(q) >= 0;
-      b.style.display = match ? "" : "none";
-      if (match) anyBr = true;
-    });
-    branchEmpty.hidden = !(q && !anyBr);
-
-    // hlaska "nic neodpovida" u subjektu jen kdyz nenajdou ani pobocky
-    searchEmpty.hidden = anySub || anyBr;
-  }
-  searchInput.addEventListener("input", () => applySearch(searchInput.value));
-  searchClear.addEventListener("click", () => { searchInput.value = ""; applySearch(""); searchInput.focus(); });
-
-  /* ============== DEEP-LINK (#produkt-idoklad, #subjekt-...) =========== */
-  function handleHash() {
-    const raw = decodeURIComponent((location.hash || "").slice(1));
-    if (!raw) return;
-    let target = document.getElementById(raw);
-    if (!target && /^produkt-/.test(raw)) {
-      // jadrovy brand chip uvnitr Produkty — telo se renderuje az po otevreni
-      const prod = document.getElementById("subjekt-produkty");
-      if (prod) { setOpen(prod, true); target = document.getElementById(raw); }
-    } else if (target && target.classList.contains("acc")) {
-      setOpen(target, true);
-    } else if (target) {
-      const acc = target.closest(".acc"); if (acc) setOpen(acc, true);
-    }
-    if (target) {
-      target.classList.add("is-hit");
-      target.scrollIntoView({ behavior: "smooth", block: "center" });
-    }
-  }
-  window.addEventListener("hashchange", handleHash);
-
-  updateFooter();
-  handleHash();
 })();
 </script>
 </body>

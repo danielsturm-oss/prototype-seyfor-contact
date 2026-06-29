@@ -4,43 +4,58 @@ Klikací prototyp kontaktní sekce webu seyfor.com. Čistě statický web (HTML/
 
 Součást projektu P-SWR (Seyfor Web Redesign).
 
-## Obsah
+## Model: akčně-vyhledávací (revize 2026-06-29)
 
-- `index.html` — vstupní stránka prototypu (root)
-- `style.css` — styly
-- `data.js` — data kontaktů / fakturační struktury skupiny + vrstva poboček
-- `assets/` — loga
+Kontaktní cesta NENÍ akviziční. Žádný lead formulář nikde. Primární vstup je
+jedno univerzální vyhledávací pole, které rozpozná typ vstupu a vrátí kartu,
+jejíž hlavní prvek je AKCE (Volat / Kopírovat / Navigovat), ne odkaz.
 
-## Jedna obrazovka (revize 2026-06-29)
+### Detekce typu vstupu a routování
+- jméno osoby → karta s tlačítkem **Volat recepci** pobočky (tap-to-call, `tel:`)
+- značka (iDoklad, Dotykačka) → provozovatel + **Fakturační údaje** + podpora (směrovka)
+- firma (Seyfor a.s., Seyfor Česko) → **Fakturační údaje** + Kopírovat / Zobrazit velké
+- IČO (6 až 8 číslic) → obrácený lookup → potvrzení „Ano, je to Seyfor" + údaje
+- město / pobočka (Praha, Rustonka) → mapa + tlačítko **Navigovat** (deep-link)
+- nejasné → záchytná síť (obecný kontakt) + návrhy
 
-- Nahoře jedno vyhledávací pole nad celou hierarchií: filtruje subjekty i pobočky živě podle značky, firmy, IČ i města.
-- Hierarchie subjektů je inline akordeon (žádný samostatný panel). Hero (Seyfor Solutions) je rozbalený rovnou.
-- **Deep-link** na konkrétní rozbalenou dlaždici přes hash:
-  - `#produkt-idoklad` (a další jádrové značky pod Produkty: `money-s3`, `money-erp`, `evala`, `vema`, `byznys`, `vario`, `onecore`)
-  - `#produkt-dotykacka`, `#produkt-commander`, `#produkt-fleetware`, `#produkt-t-cars`
-  - `#subjekt-solutions`, `#subjekt-produkty`, `#subjekt-skupina`, `#pobocky`
+Našeptávač je seskupený po kategoriích: **Lidé / Firmy / Produkty / Pobočky**.
 
-## Datový model poboček (`data.js`)
+### Tři akční flow
+1. **Volat (UC1):** osoba → recepce pobočky, kde tým sedí (ne osobní linka).
+2. **Kopírovat / Ukázat (UC2):** fakturační blok s kopírováním po polích + režim „Zobrazit velké".
+3. **Navigovat (UC3):** mapa + Navigovat (detekce platformy Apple / Google / Mapy.cz + univerzální `geo:` fallback) + recepční telefon; na sdílené adrese výpis subjektů s patrem.
 
-- `BRANCHES` = fyzická místa (adresy). Pobočka **nikdy nenese IČO**, jen odkazuje na firmu.
-- `BRANCH_PRESENCE` = kdo na adrese sedí (zobrazovaný název cedule + typ vstupu divize/firma/značka + odkaz na smluvní stranu v `ENTITIES`). Vztah pobočka↔smluvní strana je many-to-many.
-- Worked example: Rustonka (Praha) se 4 subjekty. Zbývajících 16 poboček jsou označené placeholdery („doplníme"), aby seděl počet 17.
+### Procházecí vrstva (kdo nehledá, projde)
+Seyfor Solutions (primární) · Další subjekty · Produkty (mřížka značek) · Pobočky.
+Tiché vstupy: Podpora, Pro média, M&A (jen kontaktní karta), Kariéra (jen kontaktní
+karta), Právní info, Obecný kontakt. M&A i Kariéra jsou pouze kontaktní karta.
+
+### Tichý most veřejná vrstva → smluvní strana
+Každá karta nese vzorec „Smluvní strana: [firma] s.r.o., IČ […]" z lookupu (SSOT).
+Hlavní obsah jen u fakturace (UC2), obrácený u firmy → značka.
+
+## Soubory
+- `index.html` - vstupní stránka + aplikační logika (search, detekce typu, render karet)
+- `style.css` - styly a brandové tokeny (ze skillu `seyfor-corporate-design`)
+- `data.js` - datová vrstva (SSOT): ENTITIES, DIVISIONS, BRANDS, BRANCHES + BRANCH_PRESENCE, PEOPLE
+- `assets/` - loga, reálné Seyfor ikony jsou inline SVG v `index.html`
+
+## Datový model (`data.js`)
+- `ENTITIES` = právnické osoby (drží IČO/DIČ/sídlo/datovku). MOST na smluvní stranu.
+- `DIVISIONS` = divize → firma. `BRANDS` = značka → firma.
+- `BRANCHES` = fyzická místa (adresa + recepční telefon). Pobočka **nikdy nenese IČO**.
+- `BRANCH_PRESENCE` = kdo na adrese sedí (many-to-many + patro + most na firmu).
+- `PEOPLE` = **ukázkové** osoby (jméno → tým/divize → pobočka → recepce).
+
+Placeholdery nikdy prázdné, vždy označené („doplníme" / „ukázková data"). Reálná
+data 17 poboček, osob, produktová loga a IČO k 1.1.2027 zatím nemáme → placeholder.
 
 ## Lokální spuštění
-
-Stačí otevřít `index.html` v prohlížeči. Pro korektní načítání `data.js` (kvůli omezení `file://`) doporučeno spustit lokální server:
-
 ```bash
 python3 -m http.server 8080
 # pak otevřít http://localhost:8080
 ```
 
-## Deploy
-
-Nasazení přes **Cloudflare Pages** napojené na tento GitHub repozitář.
-
-- Framework preset: **None** (statický web)
-- Build command: **prázdný**
-- Output directory: **`/`** (root — `index.html` je v rootu)
-
-Každý push do hlavní větve spustí nový deploy.
+## Deploy (Cloudflare Pages)
+- Framework preset: **None** (statický web) · Build command: **prázdný** · Output: **`/`**
+- Každý push do hlavní větve spustí nový deploy.
