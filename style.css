@@ -301,27 +301,31 @@ mark { background: var(--green-bg); color: var(--dark); padding: 0 1px; border-r
 .browse__count { font-size: 12px; color: var(--muted); }
 .browse__row { display: grid; grid-template-columns: 1fr; gap: 12px; }
 
-/* primarni dlazdice - Seyfor Solutions (tmava, dominantni) */
-.ptile {
-  position: relative; display: flex; align-items: center; gap: 18px; width: 100%;
-  text-align: left; cursor: pointer; font-family: var(--font);
-  background: var(--dark); color: #fff; border: 0; border-radius: var(--radius);
-  padding: 22px 22px; box-shadow: var(--shadow-lg); overflow: hidden;
+/* primarni HERO karta - Seyfor Solutions (dvousloupcova, dominantni)
+   VLEVO brand-light na tmavem; VPRAVO bily inset panel s fakturaci (AA kontrast).
+   Mobile-first: jeden sloupec (stack). Desktop: dva sloupce. */
+.herocard {
+  position: relative; background: var(--dark); color: #fff; border-radius: var(--radius);
+  box-shadow: var(--shadow-lg); overflow: hidden;
+  display: grid; grid-template-columns: 1fr;       /* mobil: stack */
 }
-.ptile::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 8px; background: var(--green); }
-.ptile:hover { box-shadow: 0 0 0 3px var(--green), var(--shadow-lg); }
-.ptile:focus-visible { outline: 3px solid var(--green); outline-offset: 3px; }
-.ptile__icon { flex: 0 0 56px; height: 56px; border-radius: 14px; background: #fff; display: grid; place-items: center; }
-.ptile__icon svg { width: 32px; height: 32px; }
-.ptile__text { flex: 1; min-width: 0; }
-.ptile__kicker { display: block; font-size: 10.5px; font-weight: 700; letter-spacing: 1.6px; text-transform: uppercase; color: var(--green); margin-bottom: 5px; }
-.ptile__name { display: block; font-size: 21px; font-weight: 700; margin-bottom: 4px; }
-.ptile__desc { display: block; font-size: 13px; color: #cfe0e6; margin-bottom: 8px; }
-.ptile__bridge { display: block; font-size: 12px; color: #cfe0e6; }
-.ptile__bridge strong { color: #fff; }
-.ptile__bridge .placeholder { background: rgba(216,90,48,.22); color: #F6B59A; }
-.ptile__chev { flex: 0 0 auto; color: var(--green); align-self: center; }
-.ptile__chev svg { width: 24px; height: 24px; }
+.herocard::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 8px; background: var(--green); z-index: 1; }
+.herocard__left { padding: 24px 22px 8px 26px; }
+.herocard__icon { display: inline-grid; place-items: center; width: 56px; height: 56px; border-radius: 14px; background: #fff; margin-bottom: 14px; }
+.herocard__icon svg { width: 32px; height: 32px; }
+.herocard__kicker { display: block; font-size: 10.5px; font-weight: 700; letter-spacing: 1.6px; text-transform: uppercase; color: var(--green); margin-bottom: 6px; }
+.herocard__name { font-size: 23px; font-weight: 700; margin: 0 0 6px; line-height: 1.15; }
+.herocard__desc { font-size: 13.5px; color: #cfe0e6; margin: 0 0 12px; max-width: 46ch; }
+.herocard__bridge { font-size: 12.5px; color: #cfe0e6; margin: 0; line-height: 1.5; }
+.herocard__bridge strong { color: #fff; }
+.herocard__bridge .placeholder { background: rgba(216,90,48,.22); color: #F6B59A; }
+/* pravy sloupec = bily inset panel (fakturace, AA kontrast) */
+.herocard__right { background: #fff; color: var(--dark); margin: 16px; border-radius: var(--radius-sm); padding: 16px 16px 6px; }
+.herocard__rlabel { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--green-deep); margin: 4px 0 8px; }
+.herocard__sentence { font-size: 13px; color: var(--sub); margin: 0 0 6px; line-height: 1.55; }
+.herocard__sentence strong { color: var(--dark); }
+.herocard__right .invoice { border: 0; padding: 0; margin: 0; }
+.herocard__right .invoice__label { margin-top: 6px; }
 
 /* dalsi subjekty */
 .etile {
@@ -433,6 +437,10 @@ mark { background: var(--green-bg); color: var(--dark); padding: 0 1px; border-r
   .card__title { font-size: 26px; }
   .act--call, .act--nav { width: auto; min-width: 280px; padding: 0 32px; }
   .invoice__acts .act--copy, .invoice__acts .act--ghost { flex: 0 0 auto; }
+  /* hero karta: dva sloupce, levy o neco sirsi (brand pozice) */
+  .herocard { grid-template-columns: 1.05fr 1fr; align-items: stretch; }
+  .herocard__left { padding: 28px 18px 28px 30px; align-self: center; }
+  .herocard__right { margin: 18px 18px 18px 4px; padding: 20px 20px 8px; }
 }
 @media (min-width: 920px) {
   .browse__grid { grid-template-columns: repeat(5, 1fr); }

@@ -426,21 +426,22 @@
     searchInput.focus();
   }
 
-  // oziveni akci uvnitr karty (kopirovani po poli, kopirovat vse, zobrazit velke)
-  function wireCard() {
-    result.querySelectorAll("[data-copy]").forEach(btn => {
+  // oziveni akci (kopirovani po poli, kopirovat vse, zobrazit velke) v libovolnem rootu
+  function wireActions(root) {
+    root.querySelectorAll("[data-copy]").forEach(btn => {
       btn.addEventListener("click", () => copyText(btn.dataset.copy, btn));
     });
-    result.querySelectorAll("[data-copyall]").forEach(btn => {
+    root.querySelectorAll("[data-copyall]").forEach(btn => {
       const entKey = Object.keys(D.ENTITIES).find(k => D.ENTITIES[k].name === btn.dataset.copyall);
       const ent = D.ENTITIES[entKey];
       btn.addEventListener("click", () => copyText(entityPlain(ent), btn, "Zkopírováno"));
     });
-    result.querySelectorAll("[data-bigview]").forEach(btn => {
+    root.querySelectorAll("[data-bigview]").forEach(btn => {
       const entKey = Object.keys(D.ENTITIES).find(k => D.ENTITIES[k].name === btn.dataset.bigview);
       btn.addEventListener("click", () => openBigview(D.ENTITIES[entKey]));
     });
   }
+  function wireCard() { wireActions(result); }
 
   // kopirovani s vizualni odezvou
   function copyText(text, btn, doneLabel) {
@@ -654,24 +655,29 @@
   /* =======================================================================
      PROCHAZECI VRSTVA
      ======================================================================= */
-  // primarni dlazdice - Seyfor Solutions
+  // primarni hero karta - Seyfor Solutions (dvousloupcova, vse viditelne bez kliku)
+  // VLEVO: brand-light (ikona/nazev/popis + tichy most). VPRAVO: smluvni strana
+  // detail + fakturacni udaje s kopirovanim + akcni prvky. Na mobilu se sklada pod sebe.
   (function () {
     const d = D.DIVISIONS["seyfor-solutions"], e = D.ENTITIES[d.entity];
     const el = document.getElementById("browsePrimary");
+    const icoStr = isEmpty(e.ico) ? ph("IČ doplníme") : "IČ " + esc(e.ico);
     el.innerHTML =
-      '<button class="ptile" type="button" id="tileSolutions">'
-      + '<span class="ptile__icon" aria-hidden="true">' + ico("solutions") + '</span>'
-      + '<span class="ptile__text">'
-      +   '<span class="ptile__kicker">Hlavní vstup · divize</span>'
-      +   '<span class="ptile__name">' + esc(d.display) + '</span>'
-      +   '<span class="ptile__desc">' + esc(d.desc) + '</span>'
-      +   '<span class="ptile__bridge">Smluvní strana: <strong>' + esc(e.name) + '</strong> &middot; '
-      +     (isEmpty(e.ico) ? ph("IČ doplníme") : "IČ " + esc(e.ico)) + '</span>'
-      + '</span>'
-      + '<span class="ptile__chev" aria-hidden="true">' + ico("chevron") + '</span>'
-      + '</button>';
-    document.getElementById("tileSolutions").addEventListener("click", () =>
-      showCard(renderEntity(d.entity, { kicker: "Divize", title: d.display, desc: d.desc, brandName: d.display })));
+      '<article class="herocard" aria-label="' + esc(d.display) + '">'
+      + '<div class="herocard__left">'
+      +   '<span class="herocard__icon" aria-hidden="true">' + ico("solutions") + '</span>'
+      +   '<span class="herocard__kicker">Hlavní vstup &middot; divize</span>'
+      +   '<h2 class="herocard__name">' + esc(d.display) + '</h2>'
+      +   '<p class="herocard__desc">' + esc(d.desc) + '</p>'
+      +   '<p class="herocard__bridge">Smluvní strana: <strong>' + esc(e.name) + '</strong> &middot; ' + icoStr + '</p>'
+      + '</div>'
+      + '<div class="herocard__right">'
+      +   '<p class="herocard__rlabel">Smluvní strana a fakturační údaje</p>'
+      +   '<p class="herocard__sentence">Smluvní stranou je <strong>' + esc(e.name) + '</strong>, součást skupiny Seyfor.</p>'
+      +   invoiceBlockHTML(e)
+      + '</div>'
+      + '</article>';
+    wireActions(el);
   })();
 
   // dalsi subjekty skupiny
