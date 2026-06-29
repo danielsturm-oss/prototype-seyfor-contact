@@ -213,10 +213,73 @@ const GROUP = {
   }
 };
 
-// ---- Texty prepinace zeme -------------------------------------------------
+// ---- Texty prepinace zeme (ponechano pro referenci, UI je jen CZ) ---------
 const COUNTRIES = {
   CZ: { code: "CZ", label: "ČR" },
   SK: { code: "SK", label: "SK" }
 };
 
-window.SEYFOR_DATA = { ENTITIES, BRANDS, SOLUTIONS, GROUP, COUNTRIES };
+// ---- Vizualni hierarchie subjektu (jen CZ) --------------------------------
+// Tri urovne vahy. Karta cte smluvni stranu z ENTITIES[key] primo na CZ.
+// icon = klic do brandove ikonove sady (inline SVG v index.html, brand tokeny).
+// logo = cesta k realnemu logu znacky, pokud existuje (jinak wordmark badge).
+const HIERARCHY = {
+  // PRIMARNI — dominantni, hero pozice
+  primary: {
+    key: "seyfor-solutions",
+    brandName: "Seyfor Solutions",
+    label: "Software a služby Seyfor",
+    desc: "Implementace, konzultace a rozvoj podnikového softwaru. Divize Solutions je hlavní vstup pro firmy, které řeší informační systém na míru.",
+    icon: "solutions",
+    showParty: true
+  },
+  // SEKUNDARNI — stredni vaha
+  secondary: [
+    {
+      key: "seyfor-cesko",
+      brandName: "Seyfor Česko",
+      label: "Produkty Seyfor",
+      desc: "Účetní, ekonomické a HR produkty skupiny: iDoklad, Money, Vema, Byznys, Vario, Evala a další.",
+      icon: "products",
+      showParty: true
+    },
+    {
+      key: "seyfor-as",
+      brandName: "Seyfor, a. s.",
+      label: "Skupina Seyfor",
+      desc: "Mateřská společnost a provozovatel webu. Kontakt pro média a pro majitele firem, kteří zvažují prodej nebo vstup do skupiny.",
+      icon: "building",
+      showParty: true,
+      purposes: ["ma", "press"]   // skupinove kontakty matky
+    }
+  ],
+  // TERCIARNI — nejmene vyrazne, seskupene
+  tertiary: [
+    {
+      key: "dotykacka-cr",
+      brandName: "Dotykačka",
+      desc: "Pokladní a prodejní systém pro provozovny.",
+      logo: null
+    },
+    {
+      key: "commander-services",
+      brandName: "Commander",
+      desc: "Monitoring vozidel a kniha jízd.",
+      logo: null
+    },
+    {
+      key: "radium",
+      brandName: "Fleetware",
+      desc: "Sledování a správa vozového parku.",
+      logo: null
+    },
+    {
+      key: "t-cars-system",
+      brandName: "T-Cars",
+      desc: "Správa vozového parku a leasing.",
+      logo: "assets/t-cars-logo.svg"
+    }
+  ]
+};
+
+window.SEYFOR_DATA = { ENTITIES, BRANDS, SOLUTIONS, GROUP, COUNTRIES, HIERARCHY };
