@@ -8,8 +8,23 @@ Součást projektu P-SWR (Seyfor Web Redesign).
 
 - `index.html` — vstupní stránka prototypu (root)
 - `style.css` — styly
-- `data.js` — data kontaktů / fakturační struktury skupiny
+- `data.js` — data kontaktů / fakturační struktury skupiny + vrstva poboček
 - `assets/` — loga
+
+## Jedna obrazovka (revize 2026-06-29)
+
+- Nahoře jedno vyhledávací pole nad celou hierarchií: filtruje subjekty i pobočky živě podle značky, firmy, IČ i města.
+- Hierarchie subjektů je inline akordeon (žádný samostatný panel). Hero (Seyfor Solutions) je rozbalený rovnou.
+- **Deep-link** na konkrétní rozbalenou dlaždici přes hash:
+  - `#produkt-idoklad` (a další jádrové značky pod Produkty: `money-s3`, `money-erp`, `evala`, `vema`, `byznys`, `vario`, `onecore`)
+  - `#produkt-dotykacka`, `#produkt-commander`, `#produkt-fleetware`, `#produkt-t-cars`
+  - `#subjekt-solutions`, `#subjekt-produkty`, `#subjekt-skupina`, `#pobocky`
+
+## Datový model poboček (`data.js`)
+
+- `BRANCHES` = fyzická místa (adresy). Pobočka **nikdy nenese IČO**, jen odkazuje na firmu.
+- `BRANCH_PRESENCE` = kdo na adrese sedí (zobrazovaný název cedule + typ vstupu divize/firma/značka + odkaz na smluvní stranu v `ENTITIES`). Vztah pobočka↔smluvní strana je many-to-many.
+- Worked example: Rustonka (Praha) se 4 subjekty. Zbývajících 16 poboček jsou označené placeholdery („doplníme"), aby seděl počet 17.
 
 ## Lokální spuštění
 

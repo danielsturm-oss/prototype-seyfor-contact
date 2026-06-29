@@ -75,11 +75,19 @@ const ENTITIES = {
   },
   "seyfor-as": {
     name: "Seyfor, a. s.",
+    ico: "01572377",
+    dic: "CZ01572377",
+    sidlo: "Drobného 49, 602 00 Brno",
+    datovka: null,
+    country: "CZ/SK"
+  },
+  "datacruit": {
+    name: "Datacruit s.r.o.",
     ico: null,
     dic: null,
     sidlo: null,
     datovka: null,
-    country: "CZ/SK"
+    country: "CZ"
   }
 };
 
@@ -282,4 +290,80 @@ const HIERARCHY = {
   ]
 };
 
-window.SEYFOR_DATA = { ENTITIES, BRANDS, SOLUTIONS, GROUP, COUNTRIES, HIERARCHY };
+// ---- Vrstva pobocek (fyzicka mista) --------------------------------------
+// DATOVY MODEL:
+//   pobocka      = fyzicke misto (adresa). NIKDY nenese ICO ani smluvni stranu.
+//   smluvni str. = pravni subjekt (ENTITIES[*], drzi ICO).
+//   vztah        = many-to-many pres BRANCH_PRESENCE (kdo na adrese sedi).
+//
+// BRANCHES: seznam adres. "placeholder: true" = adresu i obsazeni zatim nemame,
+// renderuje se jako oznacena placeholder polozka ("doplnime"). City = null u
+// placeholderu (nevymyslime mesto). Razeni: Praha, Brno, pak ostatni abecedne,
+// placeholdery (bez mesta) na konci. Razeni resi UI (sortBranches v index.html).
+//
+// BRANCH_PRESENCE: kdo sedi na adrese. Jeden radek = jeden subjekt na cedulce.
+//   branch    -> id pobocky (BRANCHES)
+//   display   -> zobrazovany nazev na cedulce (divize / firma / znacka)
+//   entryType -> cim se vstupuje: "divize" | "firma" | "znacka"
+//   entity    -> klic do ENTITIES = MOST na smluvni stranu (firma + ICO z lookupu)
+//   spot      -> patro / recepce (ILUSTRACNI placeholder, realna data nemame)
+//   bridge    -> nepovinna poznamka k mostu divize -> firma
+const BRANCHES = [
+  {
+    id: "rustonka-praha",
+    city: "Praha",
+    label: "Rustonka",
+    address: null,        // ulice/c.p. doplnime (mame jen nazev arealu)
+    placeholder: false
+  }
+];
+
+// 16 dalsich pobocek: data zatim nemame -> generujeme oznacene placeholdery,
+// aby byla struktura videt a celkovy pocet (17) sedel. Nic se nevymysli.
+for (let i = 2; i <= 17; i++) {
+  BRANCHES.push({
+    id: "pobocka-" + String(i).padStart(2, "0"),
+    city: null,
+    label: null,
+    address: null,
+    placeholder: true
+  });
+}
+
+// Obsazeni Rustonky (worked example): 4 subjekty, 3 typy vstupu, most na firmu.
+const BRANCH_PRESENCE = [
+  {
+    branch: "rustonka-praha",
+    display: "Seyfor Solutions",
+    entryType: "divize",
+    entity: "seyfor-solutions",
+    spot: null,
+    bridge: null
+  },
+  {
+    branch: "rustonka-praha",
+    display: "Seyfor Products",
+    entryType: "divize",
+    entity: "seyfor-cesko",
+    spot: null,
+    bridge: "Divize Products → smluvní strana Seyfor Česko."
+  },
+  {
+    branch: "rustonka-praha",
+    display: "Seyfor, a. s.",
+    entryType: "firma",
+    entity: "seyfor-as",
+    spot: null,
+    bridge: "Skupinová a akviziční agenda (M&A, tisk)."
+  },
+  {
+    branch: "rustonka-praha",
+    display: "Datacruit",
+    entryType: "znacka",
+    entity: "datacruit",
+    spot: null,
+    bridge: "Samostatná značka skupiny (vlastní doména datacruit.com)."
+  }
+];
+
+window.SEYFOR_DATA = { ENTITIES, BRANDS, SOLUTIONS, GROUP, COUNTRIES, HIERARCHY, BRANCHES, BRANCH_PRESENCE };

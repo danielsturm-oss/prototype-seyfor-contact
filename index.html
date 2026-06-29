@@ -19,39 +19,48 @@
 
   <section class="hero">
     <h1>Jak vám můžeme pomoci?</h1>
-    <p>Vyberte subjekt skupiny Seyfor, kterého se váš dotaz týká. Podle volby vám ukážeme správný kontakt i smluvní stranu.</p>
+    <p>Najděte produkt, firmu nebo pobočku Seyfor. Hned vám ukážeme správný kontakt i smluvní stranu.</p>
   </section>
 
-  <!-- HIERARCHIE SUBJEKTU (jen CZ) -->
-  <section class="subjects" aria-label="Subjekty skupiny Seyfor">
+  <!-- JEDNO vyhledavaci pole nad celou hierarchii -->
+  <section class="search-wrap" aria-label="Hledání">
+    <div class="search">
+      <span class="search__icon" id="searchIcon" aria-hidden="true"></span>
+      <input id="searchInput" class="search__input" type="search"
+             placeholder="Hledat produkt, firmu, IČ nebo pobočku"
+             autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search"
+             aria-label="Hledat produkt, firmu, IČ nebo pobočku">
+      <button class="search__clear" id="searchClear" type="button" aria-label="Vymazat hledání" hidden>&times;</button>
+    </div>
+    <p class="search__empty" id="searchEmpty" hidden>Nic neodpovídá. Zkuste jiný název, IČ nebo město.</p>
+  </section>
 
-    <!-- PRIMARNI: hero karta -->
-    <button class="subject subject--primary" id="subjPrimary" data-tier="primary">
-      <span class="subject__accent" aria-hidden="true"></span>
-      <span class="subject__icon" data-icon="solutions" aria-hidden="true"></span>
-      <span class="subject__text">
-        <span class="subject__kicker">Hlavní vstup</span>
-        <span class="subject__name"></span>
-        <span class="subject__label"></span>
-        <span class="subject__desc"></span>
-      </span>
-      <span class="subject__cta-hint">Zobrazit kontakt
-        <span class="subject__arrow" data-icon="arrow" aria-hidden="true"></span>
-      </span>
-    </button>
-
-    <!-- SEKUNDARNI: dve stredni karty -->
+  <!-- HIERARCHIE SUBJEKTU — vse na jedne obrazovce, inline akordeony -->
+  <section class="subjects" id="subjects" aria-label="Subjekty a produkty skupiny Seyfor">
+    <div id="subjPrimary"></div>
     <div class="subjects__secondary" id="subjSecondary"></div>
-
-    <!-- TERCIARNI: seskupeny blok -->
-    <div class="subjects__tertiary-wrap">
+    <div class="subjects__tertiary-wrap" id="subjTertiaryWrap">
       <p class="subjects__group-label">Další značky skupiny</p>
       <div class="subjects__tertiary" id="subjTertiary"></div>
     </div>
   </section>
 
-  <!-- Vystupni panel: kontaktni karta -->
-  <section class="panel" id="panel" aria-live="polite"></section>
+  <!-- VRSTVA POBOCEK (sekundarni) -->
+  <section class="branches" id="pobocky" aria-label="Pobočky a adresy">
+    <div class="branches__head">
+      <div class="branches__intro">
+        <h2 class="branches__title">Pobočky a adresy</h2>
+        <p class="branches__sub">Fyzická místa skupiny. Na jedné adrese může sídlet více subjektů. Smluvní stranu a IČ drží vždy firma, ne adresa.</p>
+      </div>
+      <div class="lens" role="tablist" aria-label="Zobrazení poboček">
+        <button class="lens__btn is-active" id="lensCity" role="tab" aria-selected="true" type="button">Podle místa</button>
+        <button class="lens__btn" id="lensCompany" role="tab" aria-selected="false" type="button">Podle firmy</button>
+      </div>
+    </div>
+    <p class="branches__count" id="branchCount"></p>
+    <div id="branchList"></div>
+    <p class="search__empty" id="branchEmpty" hidden>Žádná pobočka neodpovídá hledání.</p>
+  </section>
 
 </main>
 
@@ -102,7 +111,6 @@
     legalLinkLabel: "Právní informace a fakturační údaje"
   };
 
-  const panel    = document.getElementById("panel");
   const footProv = document.getElementById("footProvider");
   const modal    = document.getElementById("modal");
   const modalBody= document.getElementById("modalBody");
@@ -131,7 +139,9 @@
     copy:      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>',
     check:     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m4 12 5 5L20 6"/></svg>',
     arrow:     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>',
-    chevron:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>'
+    chevron:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>',
+    search:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg>',
+    pin:       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.3 7-11a7 7 0 1 0-14 0c0 4.7 7 11 7 11Z"/><circle cx="12" cy="10" r="2.6"/></svg>'
   };
   function ico(name) { return ICONS[name] || ""; }
 
@@ -170,23 +180,31 @@
     return lines.join("\n");
   }
 
-  // ---- sbalena sekce smluvni strany v karte -----------------------------
-  function partyHTML(ent, brandName) {
+  // ---- smluvni strana INLINE v karte (bez zbytecneho kliku navic) --------
+  // Daniel: smluvni stranu neschovavej za zbytecne kliky -> IC + udaje rovnou.
+  function partyInlineHTML(ent, brandName) {
     const sentence = brandName && brandName !== ent.name
       ? 'Provozovatelem značky <strong>' + esc(brandName) + '</strong> je <strong>'
         + esc(ent.name) + '</strong>, součást skupiny Seyfor.'
       : 'Smluvní stranou je <strong>' + esc(ent.name) + '</strong>, součást skupiny Seyfor.';
     return ''
-      + '<div class="party" id="party">'
-      +   '<button class="party__toggle" id="partyToggle" aria-expanded="false">'
-      +     '<span class="chev" aria-hidden="true">' + ico("chevron") + '</span>'
-      +     'Fakturační a identifikační údaje (smluvní strana)'
-      +   '</button>'
-      +   '<div class="party__body">'
-      +     '<p class="party__sentence">' + sentence + '</p>'
-      +     idTableHTML(ent)
-      +     '<button class="copy-btn" id="copyBtn"><span class="copy-btn__i" aria-hidden="true">' + ico("copy") + '</span>Kopírovat údaje</button>'
-      +   '</div>'
+      + '<div class="party-inline">'
+      +   '<p class="party__sentence">' + sentence + '</p>'
+      +   idTableHTML(ent)
+      +   '<button class="copy-btn" data-copy="1"><span class="copy-btn__i" aria-hidden="true">' + ico("copy") + '</span>Kopírovat údaje</button>'
+      + '</div>';
+  }
+
+  // ---- kontaktni radky (tap-to-call / tap-to-mail) ----------------------
+  function contactLinesHTML() {
+    return ''
+      + '<div class="contact-lines">'
+      +   '<a class="contact-line" href="tel:+420000000000">'
+      +     '<span class="ci" aria-hidden="true">' + ico("phone") + '</span>'
+      +     '<span>+420 000 000 000<small class="placeholder placeholder--plain">telefon doplníme</small></span></a>'
+      +   '<a class="contact-line" href="mailto:kontakt@seyfor.com">'
+      +     '<span class="ci" aria-hidden="true">' + ico("email") + '</span>'
+      +     '<span>kontakt@seyfor.com<small>napište nám</small></span></a>'
       + '</div>';
   }
 
@@ -209,114 +227,124 @@
     return html;
   }
 
-  // ---- kontaktni karta --------------------------------------------------
-  function cardHTML(cfg) {
-    const tierCls = cfg.tier ? " is-" + cfg.tier : "";
-    let html = '<div class="contact-card' + tierCls + '"><div class="contact-card__inner">';
-
-    html += '<div class="contact-card__head">';
-    if (cfg.logo) {
-      html += '<img class="contact-card__logo" src="' + esc(cfg.logo) + '" alt="' + esc(cfg.brandName) + '">';
-    } else {
-      html += '<span class="brand-badge">' + esc(cfg.brandName) + '</span>';
-    }
-    html += POWERED + '</div>';
-
-    if (cfg.label) html += '<p class="contact-card__label">' + esc(cfg.label) + '</p>';
-    html += '<p class="contact-card__desc">' + esc(cfg.desc) + '</p>';
-
-    if (cfg.pressNote)
-      html += '<div class="press-note"><strong>Pozor:</strong> ' + esc(cfg.pressNote) + '</div>';
-
-    html += '<div class="contact-lines">'
-      + '<a class="contact-line" href="tel:+420000000000">'
-      +   '<span class="ci" aria-hidden="true">' + ico("phone") + '</span>'
-      +   '<span>+420 000 000 000'
-      +   '<small class="placeholder placeholder--plain">telefonní číslo doplníme k 1.1.2027</small></span></a>'
-      + '<a class="contact-line" href="mailto:kontakt@seyfor.com">'
-      +   '<span class="ci" aria-hidden="true">' + ico("email") + '</span>'
-      +   '<span>kontakt@seyfor.com<small>napište nám</small></span></a>'
-      + '</div>';
-
-    html += '<button class="cta" id="ctaBtn">'
-          + (cfg.ctaLabel || 'Nezávazná poptávka / kontakt') + '</button>';
-
-    if (cfg.purposes) html += purposesHTML(cfg.purposes);
-
-    if (cfg.showParty)
-      html += partyHTML(cfg.ent, cfg.brandForParty || null);
-
-    html += '</div></div>';
-    return html;
-  }
-
-  // ---- vykresleni karty subjektu ----------------------------------------
-  let activeBtn = null;
-  function selectSubject(node, ent, btn) {
-    if (activeBtn) activeBtn.classList.remove("is-active");
-    if (btn) { btn.classList.add("is-active"); activeBtn = btn; }
-
-    const tier = node._tier || "secondary";
-    panel.innerHTML = cardHTML({
-      tier: tier,
-      brandName: node.brandName,
-      label: node.label,
-      desc: node.desc,
-      ent: ent,
-      logo: node.logo || null,
-      showParty: node.showParty !== false,
-      brandForParty: node.brandName !== ent.name ? node.brandName : null,
-      purposes: node.purposes || null,
-      ctaLabel: "Nezávazná poptávka / kontakt"
+  // ---- kopirovani udaju (sdilene tlacitko) ------------------------------
+  function wireCopy(btn, ent, brandName) {
+    btn.addEventListener("click", () => {
+      const text = entityPlain(ent, brandName && brandName !== ent.name ? brandName : null);
+      const done = () => {
+        btn.innerHTML = '<span class="copy-btn__i" aria-hidden="true">' + ico("check") + '</span>Zkopírováno';
+        btn.classList.add("is-done");
+        setTimeout(() => {
+          btn.innerHTML = '<span class="copy-btn__i" aria-hidden="true">' + ico("copy") + '</span>Kopírovat údaje';
+          btn.classList.remove("is-done");
+        }, 1800);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText)
+        navigator.clipboard.writeText(text).then(done).catch(() => fallbackCopy(text, done));
+      else fallbackCopy(text, done);
     });
-    wireCard({ ent: ent, brandName: node.brandName, ctaTitle: "Nezávazná poptávka: " + node.brandName });
-    updateFooter(ent, node.brandName !== ent.name ? node.brandName : null);
-    panel.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }
 
-  // ---- ozivime kartu ----------------------------------------------------
-  function wireCard(ctx) {
-    const toggle = document.getElementById("partyToggle");
-    if (toggle) {
-      toggle.addEventListener("click", () => {
-        const p = document.getElementById("party");
-        const open = p.classList.toggle("is-open");
-        toggle.setAttribute("aria-expanded", open ? "true" : "false");
-      });
-    }
-    const copy = document.getElementById("copyBtn");
-    if (copy) {
-      copy.addEventListener("click", () => {
-        const text = entityPlain(ctx.ent, ctx.brandName && ctx.brandName !== ctx.ent.name ? ctx.brandName : null);
-        const done = () => {
-          copy.innerHTML = '<span class="copy-btn__i" aria-hidden="true">' + ico("check") + '</span>Zkopírováno';
-          copy.classList.add("is-done");
-          setTimeout(() => {
-            copy.innerHTML = '<span class="copy-btn__i" aria-hidden="true">' + ico("copy") + '</span>Kopírovat údaje';
-            copy.classList.remove("is-done");
-          }, 1800);
-        };
-        if (navigator.clipboard && navigator.clipboard.writeText)
-          navigator.clipboard.writeText(text).then(done).catch(() => fallbackCopy(text, done));
-        else fallbackCopy(text, done);
-      });
-    }
-    const cta = document.getElementById("ctaBtn");
-    if (cta) cta.addEventListener("click", () => openInquiry({ ent: ctx.ent, brandName: ctx.brandName, ctaTitle: ctx.ctaTitle }));
+  /* =======================================================================
+     CAST 1 — INLINE AKORDEON SUBJEKTU (vse na jedne obrazovce)
+     Zadny sekvencni drill, zadny samostatny panel. Klik = rozbaleni karty
+     primo v mrizce. Telo nese smluvni stranu + IC + kopirovat + CTA inline.
+     ======================================================================= */
 
-    // skupinove ucely (M&A / media) na karte matky
-    document.querySelectorAll(".purpose-chip").forEach(chip => {
+  // telo karty (rozbaleny obsah akordeonu)
+  function bodyHTML(node, ent, opts) {
+    opts = opts || {};
+    const brandForParty = node.brandName && node.brandName !== ent.name ? node.brandName : null;
+    let h = '<div class="acc__body-inner">';
+    if (opts.powered) h += '<div class="acc__powered">' + POWERED + '</div>';
+    if (node.label) h += '<p class="contact-card__label">' + esc(node.label) + '</p>';
+    if (node.desc)  h += '<p class="contact-card__desc">' + esc(node.desc) + '</p>';
+    if (opts.brandChips) h += opts.brandChips;
+    h += partyInlineHTML(ent, brandForParty);
+    h += contactLinesHTML();
+    if (node.purposes) h += purposesHTML(node.purposes);
+    h += '<button class="cta" data-cta="1">Nezávazná poptávka / kontakt</button>';
+    h += '</div>';
+    return h;
+  }
+
+  // ozivi telo akordeonu (kopirovat / CTA / skupinove ucely)
+  function wireBody(bodyEl, node, ent) {
+    const copy = bodyEl.querySelector('[data-copy]');
+    if (copy) wireCopy(copy, ent, node.brandName);
+    const cta = bodyEl.querySelector('[data-cta]');
+    if (cta) cta.addEventListener("click", () =>
+      openInquiry({ ent: ent, brandName: node.brandName, ctaTitle: "Nezávazná poptávka: " + node.brandName }));
+    bodyEl.querySelectorAll(".purpose-chip").forEach(chip => {
       chip.addEventListener("click", () => {
         const g = D.GROUP[chip.dataset.purpose];
-        const ent = D.ENTITIES[g.entity];
+        const pent = D.ENTITIES[g.entity];
         const noTruth = chip.dataset.purpose === "press";
         openInquiry({
-          ent: ent, brandName: ent.name,
+          ent: pent, brandName: pent.name,
           ctaTitle: chip.dataset.purpose === "ma" ? "Kontakt pro prodej firmy (M&A)" : "Tiskový dotaz",
           noTruthParty: noTruth, pressNote: noTruth ? g.note : null
         });
       });
     });
+  }
+
+  // rozbal / sbal akordeon (telo se renderuje lazy az pri prvnim otevreni)
+  function setOpen(acc, open) {
+    const head = acc.querySelector(".acc__head");
+    const body = acc.querySelector(".acc__body");
+    acc.classList.toggle("is-open", open);
+    if (head) head.setAttribute("aria-expanded", open ? "true" : "false");
+    if (open && body && !body.dataset.ready) {
+      const node = acc._node, ent = acc._ent;
+      body.innerHTML = bodyHTML(node, ent, { brandChips: acc._brandChips || null, powered: acc._powered || false });
+      wireBody(body, node, ent);
+      body.dataset.ready = "1";
+      updateFooter(ent, node.brandName && node.brandName !== ent.name ? node.brandName : null);
+    }
+  }
+  function toggleAcc(acc) { setOpen(acc, !acc.classList.contains("is-open")); }
+
+  // sdilena konstrukce akordeonu; headHTML se lisi podle urovne
+  function buildAcc(cfg) {
+    const acc = document.createElement("div");
+    acc.className = "acc acc--" + cfg.tier;
+    acc.id = cfg.id;
+    acc.dataset.search = cfg.search || "";
+    acc._node = cfg.node;
+    acc._ent  = cfg.ent;
+    acc._brandChips = cfg.brandChips || null;
+    acc.innerHTML =
+        '<button class="acc__head" type="button" aria-expanded="false" aria-controls="' + cfg.id + '-body">'
+      +   cfg.headHTML
+      + '</button>'
+      + '<div class="acc__body" id="' + cfg.id + '-body" role="region"></div>';
+    acc.querySelector(".acc__head").addEventListener("click", () => toggleAcc(acc));
+    return acc;
+  }
+
+  // teaser "Provozuje: <firma>" na dlazdici (min. kliku — videt uz na dlazdici)
+  function providerTeaser(ent, brandName) {
+    if (!ent) return "";
+    const same = !brandName || brandName === ent.name;
+    const lead = same ? "Smluvní strana: " : "Provozuje: ";
+    const icoStr = (ent.ico == null || ent.ico === "")
+      ? '<span class="placeholder">IČ doplníme</span>' : 'IČ ' + esc(ent.ico);
+    return '<span class="teaser">' + lead + '<strong>' + esc(ent.name) + '</strong> · ' + icoStr + '</span>';
+  }
+
+  // jadrove produktove znacky pod Produkty (sdileji smluvni stranu Seyfor Cesko)
+  // -> chips s deep-link kotvou #produkt-<slug>; razeni z BRANDS (CZ Seyfor Cesko)
+  function coreBrandChips() {
+    const core = D.BRANDS.filter(b => b.provider && b.provider.CZ === "seyfor-cesko");
+    let h = '<div class="brandchips"><p class="brandchips__label">Produktové značky pod touto smluvní stranou</p><div class="brandchips__row">';
+    core.forEach(b => {
+      h += '<span class="brandchip" id="produkt-' + esc(b.slug) + '" data-brand="' + esc(b.name.toLowerCase()) + '">'
+        +    '<span class="brandchip__dot" aria-hidden="true"></span>' + esc(b.name)
+        +  '</span>';
+    });
+    h += '</div></div>';
+    return h;
   }
 
   function fallbackCopy(text, done) {
@@ -395,62 +423,296 @@
     }
   }
 
-  /* ============== build hierarchie ====================================== */
+  // sestaveni searchable retezce subjektu
+  function sstr() {
+    return Array.prototype.slice.call(arguments)
+      .filter(Boolean).join(" ").toLowerCase();
+  }
+  function entSearch(ent) { return ent ? sstr(ent.name, ent.ico, ent.dic) : ""; }
 
-  // PRIMARNI
+  /* ============== CAST 1: build hierarchie (akordeony) ================== */
+
+  // PRIMARNI — hero, rozbaleny rovnou (smart default)
   (function buildPrimary() {
     const p = H.primary; p._tier = "primary";
-    const btn = document.getElementById("subjPrimary");
-    btn.querySelector(".subject__icon").innerHTML = ico(p.icon);
-    btn.querySelector(".subject__name").textContent = p.brandName;
-    btn.querySelector(".subject__label").textContent = p.label;
-    btn.querySelector(".subject__desc").textContent = p.desc;
-    btn.querySelector(".subject__arrow").innerHTML = ico("arrow");
-    btn.addEventListener("click", () => selectSubject(p, D.ENTITIES[p.key], btn));
+    const ent = D.ENTITIES[p.key];
+    const head =
+        '<span class="subject__accent" aria-hidden="true"></span>'
+      + '<span class="acc__head-row">'
+      +   '<span class="subject__icon" aria-hidden="true">' + ico(p.icon) + '</span>'
+      +   '<span class="subject__text">'
+      +     '<span class="subject__kicker">Hlavní vstup</span>'
+      +     '<span class="subject__name">' + esc(p.brandName) + '</span>'
+      +     '<span class="subject__label">' + esc(p.label) + '</span>'
+      +     '<span class="subject__desc">' + esc(p.desc) + '</span>'
+      +     providerTeaser(ent, null)
+      +   '</span>'
+      +   '<span class="acc__chev" aria-hidden="true">' + ico("chevron") + '</span>'
+      + '</span>';
+    const acc = buildAcc({
+      id: "subjekt-solutions", tier: "primary", node: p, ent: ent,
+      headHTML: head, search: sstr(p.brandName, p.label, p.desc, entSearch(ent), "solutions software služby")
+    });
+    document.getElementById("subjPrimary").appendChild(acc);
+    setOpen(acc, true);   // smart default: otevreno bez kliku
   })();
 
-  // SEKUNDARNI
+  // SEKUNDARNI — Produkty (Seyfor Cesko, s brand chips) + Skupina (Seyfor a.s.)
   (function buildSecondary() {
     const wrap = document.getElementById("subjSecondary");
     H.secondary.forEach(s => {
       s._tier = "secondary";
-      const btn = document.createElement("button");
-      btn.className = "subject subject--secondary";
-      btn.innerHTML =
+      const ent = D.ENTITIES[s.key];
+      const isProducts = s.key === "seyfor-cesko";
+      const head =
           '<span class="subject__icon" aria-hidden="true">' + ico(s.icon) + '</span>'
         + '<span class="subject__text">'
         +   '<span class="subject__name">' + esc(s.brandName) + '</span>'
         +   '<span class="subject__label">' + esc(s.label) + '</span>'
         +   '<span class="subject__desc">' + esc(s.desc) + '</span>'
+        +   providerTeaser(ent, null)
         + '</span>'
-        + '<span class="subject__arrow" aria-hidden="true">' + ico("arrow") + '</span>';
-      btn.addEventListener("click", () => selectSubject(s, D.ENTITIES[s.key], btn));
-      wrap.appendChild(btn);
+        + '<span class="acc__chev" aria-hidden="true">' + ico("chevron") + '</span>';
+      const brandsExtra = isProducts
+        ? D.BRANDS.filter(b => b.provider && b.provider.CZ === "seyfor-cesko").map(b => b.name).join(" ")
+        : "";
+      const acc = buildAcc({
+        id: s.key === "seyfor-as" ? "subjekt-skupina" : "subjekt-produkty",
+        tier: "secondary", node: s, ent: ent, headHTML: head,
+        brandChips: isProducts ? coreBrandChips() : null,
+        search: sstr(s.brandName, s.label, s.desc, entSearch(ent), brandsExtra, s.purposes ? "média tisk prodej firmy m&a akvizice" : "")
+      });
+      wrap.appendChild(acc);
     });
   })();
 
-  // TERCIARNI
+  // TERCIARNI — samostatne znacky = produktove dlazdice s teaserem firmy
   (function buildTertiary() {
     const wrap = document.getElementById("subjTertiary");
     H.tertiary.forEach(t => {
       t._tier = "tertiary";
-      const btn = document.createElement("button");
-      btn.className = "subject subject--tertiary";
+      const ent = D.ENTITIES[t.key];
+      const slug = (t.brandName || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
       const head = t.logo
         ? '<img class="subject__logo" src="' + esc(t.logo) + '" alt="' + esc(t.brandName) + '">'
         : '<span class="subject__name">' + esc(t.brandName) + '</span>';
-      // endorsement "soucast skupiny Seyfor" — jeden opakovatelny prvek (PLACEHOLDER)
       const endorse = '<span class="subject__endorse">'
         + '<span class="subject__endorse-dot" aria-hidden="true"></span>' + esc(COPY.endorse) + '</span>';
-      btn.innerHTML = head
+      const headHTML =
+          '<span class="acc__chev acc__chev--corner" aria-hidden="true">' + ico("chevron") + '</span>'
+        + head
         + '<span class="subject__desc">' + esc(t.desc) + '</span>'
+        + providerTeaser(ent, t.brandName)   // teaser: provozujici firma uz na dlazdici
         + endorse;
-      btn.addEventListener("click", () => selectSubject(t, D.ENTITIES[t.key], btn));
-      wrap.appendChild(btn);
+      const acc = buildAcc({
+        id: "produkt-" + slug, tier: "tertiary", node: t, ent: ent, headHTML: headHTML,
+        search: sstr(t.brandName, t.desc, entSearch(ent))
+      });
+      acc._powered = true;
+      wrap.appendChild(acc);
     });
   })();
 
+  /* ============== CAST 2: vrstva pobocek ================================ */
+  const branchList  = document.getElementById("branchList");
+  const branchCount = document.getElementById("branchCount");
+  const branchEmpty = document.getElementById("branchEmpty");
+  const ENTRY_LABEL = { divize: "Divize", firma: "Firma", znacka: "Značka" };
+
+  function cityRank(c) { return c === "Praha" ? 0 : c === "Brno" ? 1 : 2; }
+  // razeni: realne pred placeholdery; Praha, Brno, pak ostatni abecedne
+  function sortBranches(list) {
+    return list.slice().sort((a, b) => {
+      if (a.placeholder !== b.placeholder) return a.placeholder ? 1 : -1;
+      const ra = cityRank(a.city), rb = cityRank(b.city);
+      if (ra !== rb) return ra - rb;
+      if (a.city && b.city && a.city !== b.city) return a.city.localeCompare(b.city, "cs");
+      return a.id.localeCompare(b.id);
+    });
+  }
+  function presenceFor(id) { return D.BRANCH_PRESENCE.filter(p => p.branch === id); }
+  function branchSearchStr(br) {
+    const parts = [br.city || "", br.label || ""];
+    presenceFor(br.id).forEach(p => {
+      const e = D.ENTITIES[p.entity];
+      parts.push(p.display, e ? e.name : "", e && e.ico ? e.ico : "");
+    });
+    if (br.placeholder) parts.push("pobočka doplníme");
+    return parts.join(" ").toLowerCase();
+  }
+
+  function presenceRowHTML(p) {
+    const e = D.ENTITIES[p.entity];
+    const icoStr = (e.ico == null || e.ico === "")
+      ? '<span class="placeholder">IČ doplníme</span>' : 'IČ ' + esc(e.ico);
+    const spot = (p.spot == null || p.spot === "")
+      ? '<span class="placeholder">patro doplníme</span>' : esc(p.spot);
+    const bridge = p.bridge ? '<span class="pres__bridge">' + esc(p.bridge) + '</span>' : "";
+    return '<div class="pres">'
+      + '<div class="pres__main">'
+      +   '<span class="pres__name">' + esc(p.display) + '</span>'
+      +   '<span class="entry entry--' + esc(p.entryType) + '">' + esc(ENTRY_LABEL[p.entryType] || p.entryType) + '</span>'
+      + '</div>'
+      + '<div class="pres__meta">'
+      +   '<span class="pres__spot"><span class="pres__pin" aria-hidden="true">' + ico("pin") + '</span>Recepce · ' + spot + '</span>'
+      +   '<span class="pres__party">Smluvní strana: <strong>' + esc(e.name) + '</strong> · ' + icoStr + '</span>'
+      +   bridge
+      + '</div>'
+      + '<button class="pres__cta" data-branch-cta data-entity="' + esc(p.entity) + '" data-display="' + esc(p.display) + '">Kontakt</button>'
+      + '</div>';
+  }
+
+  function branchCardHTML(br) {
+    if (br.placeholder) {
+      return '<div class="branch branch--ph" data-search="' + branchSearchStr(br) + '">'
+        + '<div class="branch__head"><span class="branch__pin" aria-hidden="true">' + ico("pin") + '</span>'
+        +   '<span class="branch__city"><span class="placeholder">Pobočka — doplníme adresu a obsazení</span></span></div>'
+        + '</div>';
+    }
+    const addr = (br.address == null || br.address === "")
+      ? '<span class="placeholder">adresu doplníme</span>' : esc(br.address);
+    const pres = presenceFor(br.id);
+    const rows = pres.map(presenceRowHTML).join("");
+    return '<div class="branch" data-search="' + branchSearchStr(br) + '">'
+      + '<div class="branch__head">'
+      +   '<span class="branch__pin" aria-hidden="true">' + ico("pin") + '</span>'
+      +   '<span class="branch__city">' + esc(br.city) + (br.label ? ' · <span class="branch__label">' + esc(br.label) + '</span>' : '') + '</span>'
+      + '</div>'
+      + '<p class="branch__addr">' + addr + '</p>'
+      + '<p class="branch__note">Na této adrese sídlí ' + pres.length + ' subjekty skupiny. Smluvní stranu (IČ) drží firma, ne adresa.</p>'
+      + '<div class="branch__presence">' + rows + '</div>'
+      + '</div>';
+  }
+
+  function renderBranchesCity() {
+    branchList.innerHTML = sortBranches(D.BRANCHES).map(branchCardHTML).join("");
+    wireBranchCtas();
+  }
+  function renderBranchesCompany() {
+    const byEnt = {};
+    D.BRANCH_PRESENCE.forEach(p => { (byEnt[p.entity] = byEnt[p.entity] || []).push(p); });
+    let html = "";
+    Object.keys(byEnt).forEach(k => {
+      const e = D.ENTITIES[k];
+      const icoStr = (e.ico == null || e.ico === "")
+        ? '<span class="placeholder">IČ doplníme</span>' : 'IČ ' + esc(e.ico);
+      const places = byEnt[k].map(p => {
+        const br = D.BRANCHES.find(b => b.id === p.branch);
+        const where = br ? (br.city + (br.label ? ' · ' + br.label : '')) : p.branch;
+        return '<li>' + esc(where) + ' <span class="muted">(cedule: ' + esc(p.display) + ', ' + esc(ENTRY_LABEL[p.entryType] || p.entryType) + ')</span></li>';
+      }).join("");
+      html += '<div class="branch branch--company" data-search="' + sstr(e.name, e.ico) + '">'
+        + '<div class="branch__head"><span class="branch__city">' + esc(e.name) + '</span></div>'
+        + '<p class="branch__addr">Smluvní strana · ' + icoStr + '</p>'
+        + '<ul class="branch__places">' + places + '</ul>'
+        + '<button class="pres__cta" data-branch-cta data-entity="' + esc(k) + '" data-display="' + esc(e.name) + '">Kontakt</button>'
+        + '</div>';
+    });
+    const phCount = D.BRANCHES.filter(b => b.placeholder).length;
+    html += '<p class="branch__note branch__note--ph">Zbývajících ' + phCount + ' poboček zatím nemá vyplněné obsazení — <span class="placeholder">doplníme</span>.</p>';
+    branchList.innerHTML = html;
+    wireBranchCtas();
+  }
+  function wireBranchCtas() {
+    branchList.querySelectorAll("[data-branch-cta]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const ent = D.ENTITIES[btn.dataset.entity];
+        openInquiry({ ent: ent, brandName: ent.name, ctaTitle: "Kontakt: " + (btn.dataset.display || ent.name) });
+      });
+    });
+  }
+
+  let lens = "city";
+  function renderBranches() { lens === "city" ? renderBranchesCity() : renderBranchesCompany(); applySearch(searchInput.value); }
+  (function branchMeta() {
+    const total = D.BRANCHES.length;
+    const real = D.BRANCHES.filter(b => !b.placeholder).length;
+    branchCount.textContent = "Celkem " + total + " poboček · " + real + " s daty (Praha, Rustonka), " + (total - real) + " doplníme.";
+  })();
+
+  const lensCity = document.getElementById("lensCity");
+  const lensCompany = document.getElementById("lensCompany");
+  function setLens(which) {
+    lens = which;
+    lensCity.classList.toggle("is-active", which === "city");
+    lensCompany.classList.toggle("is-active", which === "company");
+    lensCity.setAttribute("aria-selected", which === "city" ? "true" : "false");
+    lensCompany.setAttribute("aria-selected", which === "company" ? "true" : "false");
+    renderBranches();
+  }
+  lensCity.addEventListener("click", () => setLens("city"));
+  lensCompany.addEventListener("click", () => setLens("company"));
+  renderBranchesCity();
+
+  /* ============== SEARCH (jedno pole nad vsim) ========================= */
+  const searchInput = document.getElementById("searchInput");
+  const searchClear = document.getElementById("searchClear");
+  const searchEmpty = document.getElementById("searchEmpty");
+  const tertWrap    = document.getElementById("subjTertiaryWrap");
+  document.getElementById("searchIcon").innerHTML = ico("search");
+
+  function applySearch(raw) {
+    const q = (raw || "").trim().toLowerCase();
+    searchClear.hidden = !q;
+
+    // --- subjekty ---
+    let anySub = false, tertVisible = 0;
+    document.querySelectorAll(".subjects .acc").forEach(acc => {
+      const match = !q || (acc.dataset.search || "").indexOf(q) >= 0;
+      acc.classList.toggle("is-hidden", !match);
+      if (match) {
+        anySub = true;
+        if (acc.classList.contains("acc--tertiary")) tertVisible++;
+        if (q && q.length >= 2) setOpen(acc, true);     // min. kliku: rozbal shodu
+      }
+      if (!q) setOpen(acc, acc.id === "subjekt-solutions"); // reset na default
+    });
+    tertWrap.classList.toggle("is-hidden", q && tertVisible === 0);
+
+    // zvyrazni shodne produktove chips
+    document.querySelectorAll(".brandchip").forEach(c => {
+      c.classList.toggle("is-hit", !!q && (c.dataset.brand || "").indexOf(q) >= 0);
+    });
+
+    // --- pobocky ---
+    let anyBr = false;
+    branchList.querySelectorAll(".branch").forEach(b => {
+      const match = !q || (b.dataset.search || "").indexOf(q) >= 0;
+      b.style.display = match ? "" : "none";
+      if (match) anyBr = true;
+    });
+    branchEmpty.hidden = !(q && !anyBr);
+
+    // hlaska "nic neodpovida" u subjektu jen kdyz nenajdou ani pobocky
+    searchEmpty.hidden = anySub || anyBr;
+  }
+  searchInput.addEventListener("input", () => applySearch(searchInput.value));
+  searchClear.addEventListener("click", () => { searchInput.value = ""; applySearch(""); searchInput.focus(); });
+
+  /* ============== DEEP-LINK (#produkt-idoklad, #subjekt-...) =========== */
+  function handleHash() {
+    const raw = decodeURIComponent((location.hash || "").slice(1));
+    if (!raw) return;
+    let target = document.getElementById(raw);
+    if (!target && /^produkt-/.test(raw)) {
+      // jadrovy brand chip uvnitr Produkty — telo se renderuje az po otevreni
+      const prod = document.getElementById("subjekt-produkty");
+      if (prod) { setOpen(prod, true); target = document.getElementById(raw); }
+    } else if (target && target.classList.contains("acc")) {
+      setOpen(target, true);
+    } else if (target) {
+      const acc = target.closest(".acc"); if (acc) setOpen(acc, true);
+    }
+    if (target) {
+      target.classList.add("is-hit");
+      target.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }
+  window.addEventListener("hashchange", handleHash);
+
   updateFooter();
+  handleHash();
 })();
 </script>
 </body>
