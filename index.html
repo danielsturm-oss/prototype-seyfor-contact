@@ -64,19 +64,8 @@
     <div class="browse__primary" id="browsePrimary"></div>
 
     <div class="browse__block">
-      <p class="browse__label">Další subjekty skupiny</p>
-      <div class="browse__row browse__row--featured" id="browseCoreEntities"></div>
-    </div>
-
-    <div class="browse__block">
-      <p class="browse__label">Další firmy v rámci skupiny Seyfor</p>
-      <p class="browse__desc">Samostatné akvírované firmy s vlastní fakturací i doménou. Uvádíme i podíly, kde Seyfor nemá většinu.</p>
-      <div class="browse__cards" id="browseEntities"></div>
-    </div>
-
-    <div class="browse__block">
-      <p class="browse__label">Produkty Seyfor</p>
-      <div class="browse__grid" id="browseBrands"></div>
+      <p class="browse__label">Struktura firem skupiny</p>
+      <div class="company-levels" id="companyLevels"></div>
     </div>
 
     <div class="browse__block">
@@ -84,7 +73,10 @@
         <p class="browse__label">Pobočky</p>
         <span class="browse__count" id="branchCount"></span>
       </div>
-      <div class="browse__row" id="browseBranches"></div>
+      <div class="branch-tools">
+        <div class="branch-tabs" id="branchTabs" aria-label="Filtr poboček podle země"></div>
+      </div>
+      <div class="branch-groups" id="browseBranches"></div>
     </div>
 
     <div class="browse__block browse__block--quiet">
@@ -687,32 +679,38 @@
   (function () {
     const d = D.DIVISIONS["seyfor-solutions"], e = D.ENTITIES[d.entity];
     const el = document.getElementById("browsePrimary");
-    const icoStr = isEmpty(e.ico) ? ph("IČ doplníme") : "IČ " + esc(e.ico);
     el.innerHTML =
       '<article class="herocard" aria-label="' + esc(e.name) + '">'
       + '<div class="herocard__left">'
       +   '<span class="herocard__icon" aria-hidden="true">' + ico("solutions") + '</span>'
-      +   '<span class="herocard__kicker">Hlavní vstup &middot; firma</span>'
+      +   '<span class="herocard__kicker">1 &middot; hlavní firma</span>'
       +   '<h2 class="herocard__name">' + esc(e.name) + '</h2>'
       +   '<p class="herocard__desc">' + esc(d.desc) + '</p>'
-      +   '<p class="herocard__bridge">Součást skupiny Seyfor &middot; ' + icoStr + '</p>'
+      +   '<p class="herocard__bridge">Součást skupiny Seyfor</p>'
       + '</div>'
       + '<div class="herocard__right">'
       +   '<p class="herocard__rlabel">Smluvní strana a fakturační údaje</p>'
-      +   '<p class="herocard__sentence">Pro implementace a služby v ČR vystupuje jako smluvní strana <strong>' + esc(e.name) + '</strong>.</p>'
+      +   '<p class="herocard__sentence">Údaje pro fakturaci implementačních a konzultačních služeb v ČR.</p>'
       +   invoiceBlockHTML(e)
       + '</div>'
       + '</article>';
     wireActions(el);
   })();
 
-  // dalsi subjekty skupiny
+  // firemni struktura v 5 urovnich: 1. hero karta, 2-5. navazujici skupiny
   (function () {
-    const coreWrap = document.getElementById("browseCoreEntities");
-    const groupWrap = document.getElementById("browseEntities");
-    function appendEntity(wrap, k, featured) {
+    const wrap = document.getElementById("companyLevels");
+    const level2 = ["seyfor-as", "seyfor-cesko"];
+    const excluded = ["seyfor-solutions"].concat(level2);
+    const groupKeys = (D.GROUP_ENTITIES || []).filter(k => D.ENTITIES[k]);
+    const byName = (a, b) => D.ENTITIES[a].name.localeCompare(D.ENTITIES[b].name, "cs");
+    const cz = groupKeys.filter(k => excluded.indexOf(k) < 0 && D.ENTITIES[k].country === "CZ").sort(byName);
+    const sk = groupKeys.filter(k => excluded.indexOf(k) < 0 && D.ENTITIES[k].country === "SK").sort(byName);
+    const foreign = groupKeys.filter(k => excluded.indexOf(k) < 0 && ["CZ", "SK", "CZ/SK"].indexOf(D.ENTITIES[k].country) < 0).sort(byName);
+
+    function entityButton(k, featured) {
       const e = D.ENTITIES[k];
-      if (!e || !wrap) return;
+      if (!e) return null;
       const icon = k === "seyfor-cesko" ? "products" : "building";
       const btn = document.createElement("button");
       btn.className = featured ? "etile etile--featured" : "etile";
@@ -723,39 +721,106 @@
         + '<span class="etile__sub">' + esc(entitySubline(e)) + '</span></span>'
         + '<span class="etile__chev" aria-hidden="true">' + ico("chevron") + '</span>';
       btn.addEventListener("click", () => showCard(renderEntity(k, { kicker: "Firma" })));
-      wrap.appendChild(btn);
+      return btn;
     }
-    const core = ["seyfor-cesko", "seyfor-as"];
-    core.forEach(k => appendEntity(coreWrap, k, true));
-    (D.GROUP_ENTITIES || []).filter(k => core.indexOf(k) < 0).forEach(k => appendEntity(groupWrap, k, false));
-  })();
 
-  // produkty (mrizka znacek)
-  (function () {
-    const wrap = document.getElementById("browseBrands");
-    D.BRANDS.forEach(b => {
-      const btn = document.createElement("button");
-      btn.className = "btile"; btn.type = "button";
-      btn.innerHTML = '<span class="btile__dot" aria-hidden="true"></span><span class="btile__name">' + esc(b.name) + '</span>';
-      btn.addEventListener("click", () => showCard(renderBrand(b)));
-      wrap.appendChild(btn);
-    });
+    function appendLevel(number, title, desc, keys, featured) {
+      if (!keys.length || !wrap) return;
+      const section = document.createElement("section");
+      section.className = "company-level";
+      section.innerHTML =
+        '<div class="company-level__head">'
+        + '<span class="company-level__number">' + esc(number) + '</span>'
+        + '<div class="company-level__text"><h3>' + esc(title) + '</h3>'
+        + '<p>' + esc(desc) + '</p></div>'
+        + '<span class="company-level__count">' + keys.length + '</span>'
+        + '</div>';
+      const grid = document.createElement("div");
+      grid.className = featured ? "company-level__grid company-level__grid--featured" : "company-level__grid";
+      keys.forEach(k => {
+        const btn = entityButton(k, featured);
+        if (btn) grid.appendChild(btn);
+      });
+      section.appendChild(grid);
+      wrap.appendChild(section);
+    }
+
+    appendLevel("2", "Seyfor a Seyfor Products", "Skupinová firma a hlavní česká products firma. Karty uvádějí plné právní názvy.", level2, true);
+    appendLevel("3", "Všechny ostatní CZ firmy", "České dceřiné a přidružené společnosti skupiny včetně minoritních podílů.", cz, false);
+    appendLevel("4", "Všechny SK firmy", "Slovenské společnosti skupiny a samostatné slovenské značky.", sk, false);
+    appendLevel("5", "Všechny zahraniční firmy", "Ostatní zahraniční společnosti mimo Česko a Slovensko.", foreign, false);
   })();
 
   // pobocky
   (function () {
     const wrap = document.getElementById("browseBranches");
+    const tabs = document.getElementById("branchTabs");
     const real = D.BRANCHES.filter(b => !b.placeholder);
-    real.forEach(b => {
-      const btn = document.createElement("button");
-      btn.className = "brtile"; btn.type = "button";
-      btn.innerHTML = '<span class="brtile__pin" aria-hidden="true">' + ico("pin") + '</span>'
-        + '<span class="brtile__name">' + esc(b.city) + (b.label ? ' &middot; ' + esc(b.label) : '') + '</span>'
-        + '<span class="brtile__act">Navigovat</span>';
-      btn.addEventListener("click", () => showCard(renderBranch(b)));
-      wrap.appendChild(btn);
-    });
-    document.getElementById("branchCount").textContent = "celkem " + real.length + " poboček s adresou";
+    const countries = [
+      { key: "all", label: "Vše", count: real.length },
+      { key: "CZ", label: "Česko", count: real.filter(b => b.country === "CZ").length },
+      { key: "SK", label: "Slovensko", count: real.filter(b => b.country === "SK").length }
+    ].filter(c => c.count);
+    let active = "all";
+
+    function presenceCount(branchId) {
+      return D.BRANCH_PRESENCE.filter(p => p.branch === branchId).length;
+    }
+    function renderTabs() {
+      tabs.innerHTML = "";
+      countries.forEach(c => {
+        const btn = document.createElement("button");
+        btn.className = c.key === active ? "branch-tab is-active" : "branch-tab";
+        btn.type = "button";
+        btn.textContent = c.label + " (" + c.count + ")";
+        btn.addEventListener("click", () => { active = c.key; renderTabs(); renderBranches(); });
+        tabs.appendChild(btn);
+      });
+    }
+    function renderBranches() {
+      const filtered = real
+        .filter(b => active === "all" || b.country === active)
+        .sort((a, b) => (a.country + a.city + (a.label || "")).localeCompare(b.country + b.city + (b.label || ""), "cs"));
+      const cities = [];
+      filtered.forEach(b => {
+        let city = cities.find(c => c.country === b.country && c.city === b.city);
+        if (!city) {
+          city = { country: b.country, city: b.city, branches: [] };
+          cities.push(city);
+        }
+        city.branches.push(b);
+      });
+
+      wrap.innerHTML = "";
+      cities.forEach(city => {
+        const section = document.createElement("section");
+        section.className = "branch-group";
+        section.innerHTML =
+          '<div class="branch-group__head">'
+          + '<h3>' + esc(city.city) + '</h3>'
+          + '<span>' + esc(city.country) + ' · ' + city.branches.length + (city.branches.length === 1 ? ' adresa' : ' adres') + '</span>'
+          + '</div>';
+        const list = document.createElement("div");
+        list.className = "branch-group__list";
+        city.branches.forEach(b => {
+          const count = presenceCount(b.id);
+          const btn = document.createElement("button");
+          btn.className = "brtile"; btn.type = "button";
+          btn.innerHTML = '<span class="brtile__pin" aria-hidden="true">' + ico("pin") + '</span>'
+            + '<span class="brtile__text"><span class="brtile__name">' + esc(b.label || b.address || b.city) + '</span>'
+            + '<span class="brtile__meta">' + esc(b.address || "adresa doplníme") + ' · ' + count + (count === 1 ? ' firma na adrese' : ' firem na adrese') + '</span></span>'
+            + '<span class="brtile__act">Detail</span>';
+          btn.addEventListener("click", () => showCard(renderBranch(b)));
+          list.appendChild(btn);
+        });
+        section.appendChild(list);
+        wrap.appendChild(section);
+      });
+      document.getElementById("branchCount").textContent =
+        real.length + " fyzických adres · seskupeno podle země a města";
+    }
+    renderTabs();
+    renderBranches();
   })();
 
   // tiche vstupy
