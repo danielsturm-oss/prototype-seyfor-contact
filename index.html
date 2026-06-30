@@ -10,14 +10,31 @@
 
 <!-- Hlavicka -->
 <header class="site-head">
-  <img class="site-head__logo" src="assets/seyfor-logo-white.png" alt="Seyfor"
-       onerror="this.replaceWith(Object.assign(document.createElement('span'),{textContent:'SEYFOR',style:'color:#fff;font-weight:700;letter-spacing:2px;font-size:20px'}))">
-  <span class="site-head__claim">Prototyp kontaktní sekce · cílový stav k 1.1.2027</span>
+  <div class="site-head__inner">
+    <a class="site-head__brand" href="#" aria-label="Seyfor">
+      <img class="site-head__logo" src="assets/seyfor-logo.png" alt="Seyfor"
+           onerror="this.replaceWith(Object.assign(document.createElement('span'),{textContent:'Seyfor',style:'color:#023444;font-weight:700;font-size:26px'}))">
+    </a>
+    <nav class="site-nav" aria-label="Hlavní navigace">
+      <a href="#">Produkty</a>
+      <a href="#">Řešení</a>
+      <a href="#">Reference</a>
+      <a href="#">O společnosti</a>
+      <a href="#">Blog</a>
+      <a href="#" aria-current="page">Kontakt</a>
+    </nav>
+    <div class="site-actions">
+      <button class="site-actions__search" type="button" aria-label="Hledat"></button>
+      <a class="site-actions__store" href="#">Seyfor Store</a>
+      <a class="site-actions__contact" href="#">Kontakt</a>
+    </div>
+  </div>
 </header>
 
 <main class="wrap">
 
   <section class="hero">
+    <p class="hero__eyebrow">Kontakt · prototyp cílového stavu 1.1.2027</p>
     <h1>Koho nebo co hledáte?</h1>
     <p>Napište jméno, firmu, produkt, IČO nebo město. Hned vám ukážeme, co dál: zavolat, zkopírovat údaje, nebo navigovat.</p>
   </section>
@@ -47,8 +64,14 @@
     <div class="browse__primary" id="browsePrimary"></div>
 
     <div class="browse__block">
-      <p class="browse__label">Firmy skupiny Seyfor</p>
-      <div class="browse__row" id="browseEntities"></div>
+      <p class="browse__label">Další subjekty skupiny</p>
+      <div class="browse__row browse__row--featured" id="browseCoreEntities"></div>
+    </div>
+
+    <div class="browse__block">
+      <p class="browse__label">Další firmy v rámci skupiny Seyfor</p>
+      <p class="browse__desc">Samostatné akvírované firmy s vlastní fakturací i doménou. Uvádíme i podíly, kde Seyfor nemá většinu.</p>
+      <div class="browse__cards" id="browseEntities"></div>
     </div>
 
     <div class="browse__block">
@@ -76,13 +99,18 @@
 <!-- Paticka - tichy pravni most -->
 <footer class="site-foot">
   <div class="site-foot__inner">
-    <div class="site-foot__provider">
-      Provozovatel webu: <strong>Seyfor, a. s.</strong>
+    <div class="site-foot__about">
+      <img src="assets/seyfor-logo-white.png" alt="Seyfor"
+           onerror="this.replaceWith(Object.assign(document.createElement('span'),{textContent:'Seyfor',style:'color:#fff;font-weight:700;font-size:26px'}))">
+      <p id="footLegal"></p>
     </div>
-    <img src="assets/seyfor-logo-white.png" alt="Seyfor"
-         onerror="this.replaceWith(Object.assign(document.createElement('span'),{textContent:'SEYFOR',style:'color:#fff;font-weight:700;letter-spacing:2px'}))">
+    <div class="site-foot__provider">
+      <p>Provozovatel webu</p>
+      <strong>Seyfor, a. s.</strong>
+      <span>IČO 01572377 · DIČ CZ01572377</span>
+      <span>Drobného 49, 602 00 Brno</span>
+    </div>
   </div>
-  <p class="site-foot__legal" id="footLegal"></p>
 </footer>
 
 <!-- Overlay: "Zobrazit velke" (ukazat na recepci) -->
@@ -670,7 +698,7 @@
       +   '<p class="herocard__bridge">Součást skupiny Seyfor &middot; ' + icoStr + '</p>'
       + '</div>'
       + '<div class="herocard__right">'
-      +   '<p class="herocard__rlabel">Fakturační údaje</p>'
+      +   '<p class="herocard__rlabel">Smluvní strana a fakturační údaje</p>'
       +   '<p class="herocard__sentence">Pro implementace a služby v ČR vystupuje jako smluvní strana <strong>' + esc(e.name) + '</strong>.</p>'
       +   invoiceBlockHTML(e)
       + '</div>'
@@ -680,13 +708,15 @@
 
   // dalsi subjekty skupiny
   (function () {
-    const wrap = document.getElementById("browseEntities");
-    (D.GROUP_ENTITIES || []).forEach(k => {
+    const coreWrap = document.getElementById("browseCoreEntities");
+    const groupWrap = document.getElementById("browseEntities");
+    function appendEntity(wrap, k, featured) {
       const e = D.ENTITIES[k];
-      if (!e) return;
+      if (!e || !wrap) return;
       const icon = k === "seyfor-cesko" ? "products" : "building";
       const btn = document.createElement("button");
-      btn.className = "etile"; btn.type = "button";
+      btn.className = featured ? "etile etile--featured" : "etile";
+      btn.type = "button";
       btn.innerHTML =
         '<span class="etile__icon" aria-hidden="true">' + ico(icon) + '</span>'
         + '<span class="etile__text"><span class="etile__name">' + esc(e.name) + '</span>'
@@ -694,7 +724,10 @@
         + '<span class="etile__chev" aria-hidden="true">' + ico("chevron") + '</span>';
       btn.addEventListener("click", () => showCard(renderEntity(k, { kicker: "Firma" })));
       wrap.appendChild(btn);
-    });
+    }
+    const core = ["seyfor-cesko", "seyfor-as"];
+    core.forEach(k => appendEntity(coreWrap, k, true));
+    (D.GROUP_ENTITIES || []).filter(k => core.indexOf(k) < 0).forEach(k => appendEntity(groupWrap, k, false));
   })();
 
   // produkty (mrizka znacek)
@@ -749,6 +782,8 @@
 
   /* ---- paticka - tichy pravni most -------------------------------------- */
   document.getElementById("searchIcon").innerHTML = ico("search");
+  const topSearchIcon = document.querySelector(".site-actions__search");
+  if (topSearchIcon) topSearchIcon.innerHTML = ico("search");
   document.getElementById("footLegal").innerHTML =
     'Seyfor je skupina samostatných právních osob. Provozovatelem tohoto webu je <strong>Seyfor, a. s.</strong> '
     + 'Smluvní strana se liší podle vybrané služby; konkrétní firmu a IČO ukazujeme vždy na kartě dané služby.';
