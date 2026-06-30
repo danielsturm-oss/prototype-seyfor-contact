@@ -825,58 +825,6 @@ mark {
   display: grid;
   gap: 18px;
 }
-.company-summary {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 10px;
-  margin-bottom: 18px;
-}
-.company-summary__item {
-  min-height: 72px;
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 10px;
-  align-items: center;
-  padding: 12px;
-  border: 1px solid var(--seyfor-border);
-  border-radius: var(--radius);
-  background: #fff;
-  color: var(--seyfor-teal);
-  text-align: left;
-  cursor: pointer;
-}
-.company-summary__item:hover {
-  border-color: var(--seyfor-border-strong);
-  box-shadow: var(--shadow-sm);
-}
-.company-summary__num {
-  width: 30px;
-  height: 30px;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  background: var(--seyfor-green-bg);
-  color: var(--seyfor-teal);
-  font-size: 13px;
-  font-weight: 800;
-}
-.company-summary__text {
-  min-width: 0;
-  display: grid;
-  gap: 3px;
-}
-.company-summary__text strong {
-  color: var(--seyfor-teal);
-  font-size: 14px;
-  line-height: 1.25;
-}
-.company-summary__text small {
-  color: var(--seyfor-muted);
-  font-size: 12px;
-  line-height: 1.3;
-  font-weight: 600;
-  overflow-wrap: anywhere;
-}
 .company-level {
   display: grid;
   gap: 12px;
@@ -1337,8 +1285,7 @@ mark {
   font-style: italic;
   font-weight: 700;
 }
-.sample-tag,
-.assumption-flag {
+.sample-tag {
   display: inline-block;
   padding: 2px 7px;
   border-radius: 4px;
@@ -1350,10 +1297,6 @@ mark {
 .sample-tag {
   background: var(--seyfor-purple-bg);
   color: var(--seyfor-purple);
-}
-.assumption-flag {
-  background: var(--seyfor-warn-bg);
-  color: var(--seyfor-warn);
 }
 
 /* Big view */

@@ -27,9 +27,7 @@ const ENTITIES = {
     sidlo: "Sokolovská 115b\n180 00 Praha 8",
     datovka: "ab12cd3",
     country: "CZ",
-    ownershipPct: 100,
-    desc: "Samostatná firma pro software a služby Seyfor Solutions v ČR od 1. 1. 2027.",
-    assumption: true
+    desc: "Samostatná firma pro software a služby Seyfor Solutions v ČR od 1. 1. 2027."
   },
   "seyfor-cesko": {
     name: "Seyfor Česko, a. s.",
@@ -39,9 +37,7 @@ const ENTITIES = {
     sidlo: null,
     datovka: null,
     country: "CZ",
-    ownershipPct: 100,
-    desc: "Nová právní entita pro jádrové Products brandy v ČR od 1. 1. 2027.",
-    assumption: true
+    desc: "Nová právní entita pro jádrové Products brandy v ČR od 1. 1. 2027."
   },
   "seyfor-as": {
     name: "Seyfor, a. s.",
@@ -61,9 +57,7 @@ const ENTITIES = {
     sidlo: "Plynárenská 7/C, 821 09 Bratislava",
     datovka: null,
     country: "SK",
-    ownershipPct: 100,
-    desc: "Slovenská právní entita skupiny. Od 1. 1. 2027 navenek jedna smluvní strana pro SK část Products i Solutions.",
-    assumption: true
+    desc: "Slovenská právní entita skupiny. Od 1. 1. 2027 navenek jedna smluvní strana pro SK část Products i Solutions."
   },
   "seyfor-doo-si": {
     name: "Seyfor d.o.o. (SI)",
@@ -72,7 +66,6 @@ const ENTITIES = {
     sidlo: null,
     datovka: null,
     country: "SI",
-    ownershipPct: 100,
     desc: "Slovinská právní entita skupiny Seyfor."
   },
   "seyfor-doo-rs": {
@@ -82,7 +75,6 @@ const ENTITIES = {
     sidlo: null,
     datovka: null,
     country: "RS",
-    ownershipPct: 100,
     desc: "Srbská právní entita skupiny Seyfor."
   },
   "seyfor-hrvatska-doo": {
@@ -92,7 +84,6 @@ const ENTITIES = {
     sidlo: null,
     datovka: null,
     country: "HR",
-    ownershipPct: 100,
     desc: "Chorvatská právní entita skupiny Seyfor."
   },
   "vasco-doo": {
@@ -102,7 +93,6 @@ const ENTITIES = {
     sidlo: null,
     datovka: null,
     country: "SI",
-    ownershipPct: 100,
     desc: "Slovinská právní entita skupiny Seyfor."
   },
   "commander-services": {
@@ -112,9 +102,7 @@ const ENTITIES = {
     sidlo: null,
     datovka: null,
     country: "SK",
-    ownershipPct: 100,
-    desc: "Slovenská právní entita skupiny pro systémy sledování vozů Commander.",
-    assumption: true
+    desc: "Slovenská právní entita skupiny pro systémy sledování vozů Commander."
   },
   "radium": {
     name: "Radium s.r.o.",
@@ -123,7 +111,6 @@ const ENTITIES = {
     sidlo: "nám. Chuchelských bojovníků 18/1, Praha 5",
     datovka: null,
     country: "CZ",
-    ownershipPct: 100,
     desc: "Právní entita skupiny pro značku Fleetware."
   },
   "ks-program": {
@@ -133,9 +120,7 @@ const ENTITIES = {
     sidlo: null,
     datovka: null,
     country: "CZ",
-    ownershipPct: 100,
-    desc: "Právní entita skupiny pro personální a mzdové systémy KS Program.",
-    assumption: true
+    desc: "Právní entita skupiny pro personální a mzdové systémy KS Program."
   },
   "t-cars-system": {
     name: "T-Cars System s.r.o.",
@@ -144,9 +129,7 @@ const ENTITIES = {
     sidlo: null,
     datovka: null,
     country: "CZ",
-    ownershipPct: 100,
-    desc: "Právní entita skupiny pro systémy sledování vozů T-Cars.",
-    assumption: true
+    desc: "Právní entita skupiny pro systémy sledování vozů T-Cars."
   },
   "ncc": {
     name: "NCC, a.s.",
@@ -155,9 +138,7 @@ const ENTITIES = {
     sidlo: null,
     datovka: null,
     country: "SK",
-    ownershipPct: 100,
-    desc: "Slovenská právní entita skupiny Seyfor a současně BU v oblasti Business Apps.",
-    assumption: true
+    desc: "Slovenská právní entita skupiny Seyfor a současně BU v oblasti Business Apps."
   },
   "datacruit": {
     name: "Datacruit s.r.o.",
@@ -166,7 +147,6 @@ const ENTITIES = {
     sidlo: null,
     datovka: null,
     country: "CZ",
-    ownershipPct: 100,
     desc: "Samostatná dceřiná firma skupiny pro ATS Datacruit."
   },
   "revolution-software": {
@@ -176,7 +156,6 @@ const ENTITIES = {
     sidlo: null,
     datovka: null,
     country: "HU",
-    ownershipPct: 100,
     desc: "Maďarská právní entita skupiny Seyfor."
   },
   "mi-systems": {
@@ -186,7 +165,6 @@ const ENTITIES = {
     sidlo: null,
     datovka: null,
     country: "RS",
-    ownershipPct: 70,
     desc: "Srbská právní entita skupiny Seyfor."
   },
   "besteron": {
@@ -196,20 +174,7 @@ const ENTITIES = {
     sidlo: null,
     datovka: null,
     country: "SK",
-    ownershipPct: 68,
-    desc: "Slovenská právní entita skupiny pro platební bránu Besteron.",
-    assumption: true
-  },
-  "dotykacka-holding": {
-    name: "Dotykačka holding a.s.",
-    ico: null,
-    dic: null,
-    sidlo: null,
-    datovka: null,
-    country: "CZ",
-    ownershipPct: 58.5,
-    desc: "Mezivlastnický holding ve skupině Seyfor pro pokladní a platební systémy.",
-    assumption: true
+    desc: "Slovenská právní entita skupiny pro platební bránu Besteron."
   },
   "dotykacka-cr": {
     name: "Dotykačka ČR s.r.o.",
@@ -218,8 +183,7 @@ const ENTITIES = {
     sidlo: null,
     datovka: null,
     country: "CZ",
-    desc: "Právní entita pod Dotykačka holding a.s. pro pokladní produkty Dotykačka, Prodejna SQL, Profi Účtenka a SmartPOS.",
-    assumption: true
+    desc: "Provozní právní entita pro pokladní produkty Dotykačka, Prodejna SQL, Profi Účtenka a SmartPOS."
   },
   "dotypay": {
     name: "Dotypay s.r.o.",
@@ -228,8 +192,7 @@ const ENTITIES = {
     sidlo: null,
     datovka: null,
     country: "CZ",
-    desc: "Právní entita pod Dotykačka holding a.s. pro platební systémy.",
-    assumption: true
+    desc: "Právní entita pro platební systémy."
   },
   "markeeta-slovensko": {
     name: "Markeeta Slovensko s.r.o.",
@@ -238,8 +201,7 @@ const ENTITIES = {
     sidlo: null,
     datovka: null,
     country: "SK",
-    desc: "Právní entita pod Dotykačka holding a.s. pro pokladní software Markeeta.",
-    assumption: true
+    desc: "Právní entita pro pokladní software Markeeta."
   },
   "kasamax-eu": {
     name: "KASAmax EU s.r.o.",
@@ -248,9 +210,7 @@ const ENTITIES = {
     sidlo: null,
     datovka: null,
     country: "CZ",
-    ownershipPct: 90,
-    desc: "Právní entita pod Dotykačka holding a.s. pro pokladní software KASAmax.",
-    assumption: true
+    desc: "Právní entita pro pokladní software KASAmax."
   },
   "aibility": {
     name: "AIbility s.r.o.",
@@ -259,7 +219,6 @@ const ENTITIES = {
     sidlo: "Drobného 555/49, Brno",
     datovka: null,
     country: "CZ",
-    ownershipPct: 55,
     desc: "Právní entita skupiny pro AI poradenství a AI gramotnost."
   },
   "recruitis-io": {
@@ -269,7 +228,6 @@ const ENTITIES = {
     sidlo: "Chmelova 357/2, Hradec Králové",
     datovka: null,
     country: "CZ",
-    ownershipPct: 37.95,
     desc: "Přidružená právní entita skupiny Seyfor pro ATS Recruitis."
   },
   "raynet-holding": {
@@ -279,8 +237,7 @@ const ENTITIES = {
     sidlo: "Hlavní třída 6078/13, 708 00 Ostrava-Poruba",
     datovka: null,
     country: "CZ",
-    ownershipPct: 40,
-    desc: "Přidružená právní entita ve skupině Seyfor a kanonický domov 40% podílu Seyforu v Raynet."
+    desc: "Přidružená právní entita ve skupině Seyfor a kanonický domov skupinového vztahu k Raynet."
   },
   "raynet": {
     name: "RAYNET s.r.o.",
@@ -289,7 +246,6 @@ const ENTITIES = {
     sidlo: "Hlavní třída 6078/13, Ostrava",
     datovka: null,
     country: "CZ",
-    ownershipPct: 100,
     desc: "Operační CRM entita pod RAYNET Holding s.r.o."
   }
 };
@@ -311,7 +267,6 @@ const GROUP_ENTITIES = [
   "revolution-software",
   "mi-systems",
   "besteron",
-  "dotykacka-holding",
   "dotykacka-cr",
   "dotypay",
   "markeeta-slovensko",

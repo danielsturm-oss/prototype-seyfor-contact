@@ -26,7 +26,9 @@ Našeptávač je seskupený po kategoriích: **Lidé / Firmy / Produkty / Poboč
 3. **Navigovat (UC3):** mapa + Navigovat (detekce platformy Apple / Google / Mapy.cz + univerzální `geo:` fallback) + recepční telefon; na sdílené adrese výpis subjektů s patrem.
 
 ### Procházecí vrstva (kdo nehledá, projde)
-Seyfor Solutions (primární) · Další subjekty · Produkty (mřížka značek) · Pobočky.
+Taby **Firmy / Pobočky / Další kontakty**. Firmy jsou ve 5 úrovních; úrovně 3-5
+jsou sbalené do kompaktních řádků. Produkty nejsou v browse vrstvě, zůstávají jen
+ve vyhledávání a našeptávači.
 Tiché vstupy: Podpora, Pro média, M&A (jen kontaktní karta), Kariéra (jen kontaktní
 karta), Právní info, Obecný kontakt. M&A i Kariéra jsou pouze kontaktní karta.
 
@@ -48,7 +50,7 @@ Hlavní obsah jen u fakturace (UC2), obrácený u firmy → značka.
 - `PEOPLE` = **ukázkové** osoby (jméno → tým/divize → pobočka → recepce).
 
 Placeholdery nikdy prázdné, vždy označené („doplníme" / „ukázková data"). Reálná
-data 17 poboček, osob, produktová loga a IČO k 1.1.2027 zatím nemáme → placeholder.
+data některých firem, osob, produktová loga a IČO k 1.1.2027 zatím nemáme → placeholder.
 
 ## Lokální spuštění
 ```bash

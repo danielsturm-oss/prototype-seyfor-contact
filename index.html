@@ -69,7 +69,6 @@
     </div>
 
     <section class="browse-panel is-active" id="panelCompanies" role="tabpanel" aria-labelledby="tabCompanies">
-      <div class="company-summary" id="companySummary"></div>
       <div class="browse__primary" id="browsePrimary"></div>
 
       <div class="browse__block">
@@ -176,7 +175,6 @@
   function val(v, label) { return isEmpty(v) ? ph(label || "doplníme k 1.1.2027") : esc(v); }
   function entitySubline(e) {
     const parts = [];
-    if (!isEmpty(e.ownershipPct)) parts.push(String(e.ownershipPct).replace(".", ",") + " %");
     if (!isEmpty(e.country)) parts.push(e.country);
     parts.push(isEmpty(e.ico) ? "IČO doplníme" : "IČO " + e.ico);
     return parts.join(" · ");
@@ -213,10 +211,8 @@
   // fakturacni blok firmy (IC/DIC/sidlo/datovka) + akce Kopirovat vse / Zobrazit velke
   function invoiceBlockHTML(ent, opts) {
     opts = opts || {};
-    const assume = ent.assumption
-      ? '<span class="assumption-flag">předpoklad k ověření</span>' : "";
     let h = '<div class="invoice">';
-    h += '<p class="invoice__label">Fakturační údaje' + assume + '</p>';
+    h += '<p class="invoice__label">Fakturační údaje</p>';
     h += fieldRowHTML("IČO", ent.ico, "IČO doplníme");
     h += fieldRowHTML("DIČ", ent.dic, "DIČ doplníme");
     h += fieldRowHTML("Sídlo", ent.sidlo, "sídlo doplníme");
@@ -354,13 +350,13 @@
       let inner = '<div class="confirm"><span class="confirm__i" aria-hidden="true">' + ico("check") + '</span>'
         + '<span>Ano, IČO <strong>' + esc(digits) + '</strong> patří firmě ze skupiny Seyfor.</span></div>';
       inner += invoiceBlockHTML(ent);
-      return cardShell("IČO · ověření", ent.name, inner);
+      return cardShell("IČO", ent.name, inner);
     }
     // nenalezeno -> zachytna sit
     let inner = '<div class="confirm confirm--no"><span class="confirm__i" aria-hidden="true">' + ico("search") + '</span>'
       + '<span>IČO <strong>' + esc(digits) + '</strong> v naší skupině nemáme. Možná hledáte jiný subjekt - ozvěte se nám.</span></div>';
     inner += generalInner();
-    return cardShell("IČO · ověření", "Neznámé IČO", inner);
+    return cardShell("IČO", "Neznámé IČO", inner);
   }
 
   // UC3 - NAVIGOVAT: mesto / pobocka -> mapa + navigovat + recepce + obsazeni
@@ -735,7 +731,7 @@
       '<article class="herocard" aria-label="' + esc(e.name) + '">'
       + '<div class="herocard__left">'
       +   '<span class="herocard__icon" aria-hidden="true">' + ico("solutions") + '</span>'
-      +   '<span class="herocard__kicker">1 &middot; firma bez vlastní značky</span>'
+      +   '<span class="herocard__kicker">1</span>'
       +   '<h2 class="herocard__name">' + esc(e.name) + '</h2>'
       +   '<p class="herocard__desc">' + esc(d.desc) + '</p>'
       +   '<p class="herocard__bridge">Součást skupiny Seyfor</p>'
@@ -752,7 +748,6 @@
   // firemni struktura v 5 urovnich: 1. hero karta, 2-5. navazujici skupiny
   (function () {
     const wrap = document.getElementById("companyLevels");
-    const summaryWrap = document.getElementById("companySummary");
     const level2 = ["seyfor-as", "seyfor-cesko"];
     const excluded = ["seyfor-solutions"].concat(level2);
     const groupKeys = (D.GROUP_ENTITIES || []).filter(k => D.ENTITIES[k]);
@@ -837,32 +832,6 @@
     appendLevel("4", "Všechny SK firmy", "Slovenské společnosti skupiny a samostatné slovenské značky.", sk, false);
     appendLevel("5", "Všechny zahraniční firmy", "Ostatní zahraniční společnosti mimo Česko a Slovensko.", foreign, false);
 
-    function examples(keys) {
-      return keys.slice(0, 2).map(k => D.ENTITIES[k].shortName || D.ENTITIES[k].name).join(", ");
-    }
-    function openLevel(level) {
-      switchBrowsePanel("panelCompanies");
-      const target = level === "1" ? document.getElementById("browsePrimary") : document.querySelector('[data-level="' + level + '"]');
-      if (target && target.tagName === "DETAILS") target.open = true;
-      if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-    [
-      { level: "1", title: "Seyfor Solutions", meta: "1 firma · bez vlastní značky" },
-      { level: "2", title: "Seyfor a Products", meta: "2 firmy · " + examples(level2) },
-      { level: "3", title: "České firmy", meta: cz.length + " firem · " + examples(cz) },
-      { level: "4", title: "Slovenské firmy", meta: sk.length + " firem · " + examples(sk) },
-      { level: "5", title: "Zahraniční firmy", meta: foreign.length + " firem · " + examples(foreign) }
-    ].forEach(item => {
-      const btn = document.createElement("button");
-      btn.className = "company-summary__item";
-      btn.type = "button";
-      btn.innerHTML =
-        '<span class="company-summary__num">' + esc(item.level) + '</span>'
-        + '<span class="company-summary__text"><strong>' + esc(item.title) + '</strong>'
-        + '<small>' + esc(item.meta) + '</small></span>';
-      btn.addEventListener("click", () => openLevel(item.level));
-      summaryWrap.appendChild(btn);
-    });
   })();
 
   // pobocky
@@ -993,7 +962,7 @@
         const more = document.createElement("button");
         more.className = "branch-more";
         more.type = "button";
-        more.textContent = showAllBranches ? "Zobrazit jen hlavní adresy" : "Zobrazit dalších " + hiddenCount + " menších adres";
+        more.textContent = showAllBranches ? "Zobrazit méně adres" : "Zobrazit další adresy";
         more.addEventListener("click", () => {
           showAllBranches = !showAllBranches;
           renderBranches();
