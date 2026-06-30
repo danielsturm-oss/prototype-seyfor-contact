@@ -47,7 +47,7 @@
     <div class="browse__primary" id="browsePrimary"></div>
 
     <div class="browse__block">
-      <p class="browse__label">Další subjekty skupiny</p>
+      <p class="browse__label">Firmy skupiny Seyfor</p>
       <div class="browse__row" id="browseEntities"></div>
     </div>
 
@@ -139,6 +139,13 @@
   function isEmpty(v) { return v === null || v === undefined || v === ""; }
   function ph(label) { return '<span class="placeholder">' + esc(label) + '</span>'; }
   function val(v, label) { return isEmpty(v) ? ph(label || "doplníme k 1.1.2027") : esc(v); }
+  function entitySubline(e) {
+    const parts = [];
+    if (!isEmpty(e.ownershipPct)) parts.push(String(e.ownershipPct).replace(".", ",") + " %");
+    if (!isEmpty(e.country)) parts.push(e.country);
+    parts.push(isEmpty(e.ico) ? "IČO doplníme" : "IČO " + e.ico);
+    return parts.join(" · ");
+  }
   function telHref(num) { return "tel:" + String(num).replace(/[^+0-9]/g, ""); }
   function lower(s) { return (s || "").toLowerCase(); }
   // diakritika-insensitive normalizace pro hledani
@@ -278,7 +285,7 @@
     o = o || {};
     const ent = D.ENTITIES[entKey];
     let inner = "";
-    if (o.desc) inner += '<p class="card__meta">' + esc(o.desc) + '</p>';
+    if (o.desc || ent.desc) inner += '<p class="card__meta">' + esc(o.desc || ent.desc) + '</p>';
     if (o.brandName) inner += bridgeHTML(ent, o.brandName);
     inner += invoiceBlockHTML(ent);
     return cardShell(o.kicker || "Firma", o.title || ent.name, inner);
@@ -488,17 +495,13 @@
     cat: "Lidé", type: "person", label: p.name,
     sub: p.team, ref: p, search: norm(p.name + " " + p.team)
   }));
-  // firmy a divize (subjekty s fakturaci) - z ENTITIES + divize
-  Object.keys(D.DIVISIONS).forEach(k => {
-    const d = D.DIVISIONS[k], e = D.ENTITIES[d.entity];
-    INDEX.push({ cat: "Firmy", type: "division", label: d.display, sub: "Smluvní strana: " + e.name,
-      ref: { divKey: k }, search: norm(d.display + " " + e.name + " " + (e.ico || "")) });
-  });
-  ["seyfor-cesko", "seyfor-as"].forEach(k => {
+  // firmy (verejne ukazujeme pravni subjekty, ne interni divize)
+  ["seyfor-solutions"].concat(D.GROUP_ENTITIES || []).forEach(k => {
     const e = D.ENTITIES[k];
+    if (!e) return;
     INDEX.push({ cat: "Firmy", type: "entity", label: e.name,
-      sub: e.ico ? "IČO " + e.ico : "IČO doplníme", ref: { entKey: k },
-      search: norm(e.name + " " + (e.ico || "")) });
+      sub: entitySubline(e), ref: { entKey: k },
+      search: norm(e.name + " " + (e.shortName || "") + " " + (e.ico || "") + " " + (e.desc || "")) });
   });
   // produkty (znacky)
   D.BRANDS.forEach(b => INDEX.push({
@@ -533,7 +536,7 @@
     if (d.type === "empty") return "";
     if (d.type === "ico") return "Vypadá to jako IČO - ověříme, jestli patří do skupiny Seyfor.";
     if (d.type === "match") {
-      const map = { person: "osobu", brand: "produkt", entity: "firmu", division: "divizi", branch: "pobočku" };
+      const map = { person: "osobu", brand: "produkt", entity: "firmu", branch: "pobočku" };
       return "Našli jsme " + (map[d.item.type] || "položku") + ": " + d.item.label + ".";
     }
     return "Nenašli jsme přesnou shodu - zkuste jméno, značku, IČO nebo město.";
@@ -546,11 +549,7 @@
     searchClear.hidden = false;
     if (item.type === "person") showCard(renderPerson(item.ref));
     else if (item.type === "brand") showCard(renderBrand(item.ref));
-    else if (item.type === "entity") showCard(renderEntity(item.ref.entKey, {}));
-    else if (item.type === "division") {
-      const d = D.DIVISIONS[item.ref.divKey];
-      showCard(renderEntity(d.entity, { kicker: "Divize", title: d.display, desc: d.desc, brandName: d.display }));
-    }
+    else if (item.type === "entity") showCard(renderEntity(item.ref.entKey, { kicker: "Firma" }));
     else if (item.type === "branch") showCard(renderBranch(item.ref));
   }
 
@@ -655,25 +654,24 @@
   /* =======================================================================
      PROCHAZECI VRSTVA
      ======================================================================= */
-  // primarni hero karta - Seyfor Solutions (dvousloupcova, vse viditelne bez kliku)
-  // VLEVO: brand-light (ikona/nazev/popis + tichy most). VPRAVO: smluvni strana
-  // detail + fakturacni udaje s kopirovanim + akcni prvky. Na mobilu se sklada pod sebe.
+  // primarni hero karta - verejne pravni firma, ne interni divize
+  // VLEVO: brand-light (ikona/nazev/popis). VPRAVO: fakturacni udaje.
   (function () {
     const d = D.DIVISIONS["seyfor-solutions"], e = D.ENTITIES[d.entity];
     const el = document.getElementById("browsePrimary");
     const icoStr = isEmpty(e.ico) ? ph("IČ doplníme") : "IČ " + esc(e.ico);
     el.innerHTML =
-      '<article class="herocard" aria-label="' + esc(d.display) + '">'
+      '<article class="herocard" aria-label="' + esc(e.name) + '">'
       + '<div class="herocard__left">'
       +   '<span class="herocard__icon" aria-hidden="true">' + ico("solutions") + '</span>'
-      +   '<span class="herocard__kicker">Hlavní vstup &middot; divize</span>'
-      +   '<h2 class="herocard__name">' + esc(d.display) + '</h2>'
+      +   '<span class="herocard__kicker">Hlavní vstup &middot; firma</span>'
+      +   '<h2 class="herocard__name">' + esc(e.name) + '</h2>'
       +   '<p class="herocard__desc">' + esc(d.desc) + '</p>'
-      +   '<p class="herocard__bridge">Smluvní strana: <strong>' + esc(e.name) + '</strong> &middot; ' + icoStr + '</p>'
+      +   '<p class="herocard__bridge">Součást skupiny Seyfor &middot; ' + icoStr + '</p>'
       + '</div>'
       + '<div class="herocard__right">'
-      +   '<p class="herocard__rlabel">Smluvní strana a fakturační údaje</p>'
-      +   '<p class="herocard__sentence">Smluvní stranou je <strong>' + esc(e.name) + '</strong>, součást skupiny Seyfor.</p>'
+      +   '<p class="herocard__rlabel">Fakturační údaje</p>'
+      +   '<p class="herocard__sentence">Pro implementace a služby v ČR vystupuje jako smluvní strana <strong>' + esc(e.name) + '</strong>.</p>'
       +   invoiceBlockHTML(e)
       + '</div>'
       + '</article>';
@@ -683,15 +681,16 @@
   // dalsi subjekty skupiny
   (function () {
     const wrap = document.getElementById("browseEntities");
-    [["seyfor-cesko", "products", "Produkty Seyfor"], ["seyfor-as", "building", "Skupina Seyfor"]].forEach(([k, icon, label]) => {
+    (D.GROUP_ENTITIES || []).forEach(k => {
       const e = D.ENTITIES[k];
+      if (!e) return;
+      const icon = k === "seyfor-cesko" ? "products" : "building";
       const btn = document.createElement("button");
       btn.className = "etile"; btn.type = "button";
       btn.innerHTML =
         '<span class="etile__icon" aria-hidden="true">' + ico(icon) + '</span>'
         + '<span class="etile__text"><span class="etile__name">' + esc(e.name) + '</span>'
-        + '<span class="etile__sub">' + esc(label) + ' &middot; '
-        + (isEmpty(e.ico) ? ph("IČ doplníme") : "IČ " + esc(e.ico)) + '</span></span>'
+        + '<span class="etile__sub">' + esc(entitySubline(e)) + '</span></span>'
         + '<span class="etile__chev" aria-hidden="true">' + ico("chevron") + '</span>';
       btn.addEventListener("click", () => showCard(renderEntity(k, { kicker: "Firma" })));
       wrap.appendChild(btn);
@@ -714,7 +713,6 @@
   (function () {
     const wrap = document.getElementById("browseBranches");
     const real = D.BRANCHES.filter(b => !b.placeholder);
-    const phCount = D.BRANCHES.length - real.length;
     real.forEach(b => {
       const btn = document.createElement("button");
       btn.className = "brtile"; btn.type = "button";
@@ -724,13 +722,7 @@
       btn.addEventListener("click", () => showCard(renderBranch(b)));
       wrap.appendChild(btn);
     });
-    // placeholder dlazdice (jasne oznacena)
-    const phEl = document.createElement("div");
-    phEl.className = "brtile brtile--ph";
-    phEl.innerHTML = '<span class="placeholder">Dalších ' + phCount + ' poboček doplníme (adresy a recepce)</span>';
-    wrap.appendChild(phEl);
-    document.getElementById("branchCount").textContent =
-      "celkem " + D.BRANCHES.length + " · " + real.length + " s daty, " + phCount + " doplníme";
+    document.getElementById("branchCount").textContent = "celkem " + real.length + " poboček s adresou";
   })();
 
   // tiche vstupy
