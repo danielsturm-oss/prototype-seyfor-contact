@@ -1027,14 +1027,6 @@ mark {
 .herocard__rlabel {
   color: var(--seyfor-purple);
 }
-.herocard__sentence {
-  margin: 0 0 8px;
-  color: var(--seyfor-muted);
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 1.5;
-}
-.herocard__sentence strong { color: var(--seyfor-teal); }
 .herocard__right .invoice {
   margin-top: 4px;
 }
