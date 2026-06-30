@@ -51,6 +51,7 @@
       <button class="search__clear" id="searchClear" type="button" aria-label="Vymazat hledání" hidden>&times;</button>
     </div>
     <p class="search__hint" id="searchHint" aria-live="polite"></p>
+    <div class="quick-chips" id="quickChips" aria-label="Rychlé cesty"></div>
     <!-- Naseptavac seskupeny PO KATEGORIICH -->
     <div class="sug" id="sugList" role="listbox" aria-label="Návrhy" hidden></div>
   </section>
@@ -61,28 +62,42 @@
   <!-- PROCHAZECI VRSTVA (kdo nehleda, projde) -->
   <section class="browse" id="browse" aria-label="Procházení">
 
-    <div class="browse__primary" id="browsePrimary"></div>
-
-    <div class="browse__block">
-      <p class="browse__label">Struktura firem skupiny</p>
-      <div class="company-levels" id="companyLevels"></div>
+    <div class="browse-tabs" role="tablist" aria-label="Procházet kontakt">
+      <button class="browse-tab is-active" id="tabCompanies" type="button" role="tab" aria-selected="true" aria-controls="panelCompanies" data-panel="panelCompanies">Firmy</button>
+      <button class="browse-tab" id="tabBranches" type="button" role="tab" aria-selected="false" aria-controls="panelBranches" data-panel="panelBranches">Pobočky</button>
+      <button class="browse-tab" id="tabContacts" type="button" role="tab" aria-selected="false" aria-controls="panelContacts" data-panel="panelContacts">Další kontakty</button>
     </div>
 
-    <div class="browse__block">
-      <div class="browse__head">
-        <p class="browse__label">Pobočky</p>
-        <span class="browse__count" id="branchCount"></span>
+    <section class="browse-panel is-active" id="panelCompanies" role="tabpanel" aria-labelledby="tabCompanies">
+      <div class="company-summary" id="companySummary"></div>
+      <div class="browse__primary" id="browsePrimary"></div>
+
+      <div class="browse__block">
+        <p class="browse__label">Struktura firem skupiny</p>
+        <div class="company-levels" id="companyLevels"></div>
       </div>
-      <div class="branch-tools">
-        <div class="branch-tabs" id="branchTabs" aria-label="Filtr poboček podle země"></div>
-      </div>
-      <div class="branch-groups" id="browseBranches"></div>
-    </div>
+    </section>
 
-    <div class="browse__block browse__block--quiet">
-      <p class="browse__label">Další cesty</p>
-      <div class="quiet" id="quietEntries"></div>
-    </div>
+    <section class="browse-panel" id="panelBranches" role="tabpanel" aria-labelledby="tabBranches" hidden>
+      <div class="browse__block">
+        <div class="browse__head">
+          <p class="browse__label">Pobočky</p>
+          <span class="browse__count" id="branchCount"></span>
+        </div>
+        <div class="branch-tools">
+          <div class="branch-tabs" id="branchTabs" aria-label="Filtr poboček podle země"></div>
+          <div class="branch-city-tabs" id="branchCityTabs" aria-label="Filtr poboček podle města"></div>
+        </div>
+        <div class="branch-groups" id="browseBranches"></div>
+      </div>
+    </section>
+
+    <section class="browse-panel" id="panelContacts" role="tabpanel" aria-labelledby="tabContacts" hidden>
+      <div class="browse__block browse__block--quiet">
+        <p class="browse__label">Další cesty</p>
+        <div class="quiet" id="quietEntries"></div>
+      </div>
+    </section>
 
   </section>
 
@@ -671,6 +686,43 @@
     showCard(cardShell("Nenašli jsme shodu", "Nezařazený dotaz", inner));
   }
 
+  function switchBrowsePanel(panelId) {
+    document.querySelectorAll(".browse-tab").forEach(btn => {
+      const active = btn.dataset.panel === panelId;
+      btn.classList.toggle("is-active", active);
+      btn.setAttribute("aria-selected", active ? "true" : "false");
+    });
+    document.querySelectorAll(".browse-panel").forEach(panel => {
+      const active = panel.id === panelId;
+      panel.classList.toggle("is-active", active);
+      panel.hidden = !active;
+    });
+  }
+  document.querySelectorAll(".browse-tab").forEach(btn => {
+    btn.addEventListener("click", () => switchBrowsePanel(btn.dataset.panel));
+  });
+
+  (function () {
+    const wrap = document.getElementById("quickChips");
+    const chips = [
+      { label: "Fakturační údaje", run: () => showCard(renderEntity("seyfor-solutions", { kicker: "Firma" })) },
+      { label: "IČO", run: () => { searchInput.value = "01572377"; searchClear.hidden = false; submitSearch(searchInput.value); } },
+      { label: "Praha", run: () => { searchInput.value = "Praha"; searchClear.hidden = false; submitSearch(searchInput.value); } },
+      { label: "Brno", run: () => { searchInput.value = "Brno"; searchClear.hidden = false; submitSearch(searchInput.value); } },
+      { label: "Podpora", run: () => showCard(renderContact({ kicker: "Podpora", label: D.SUPPORT.label, desc: D.SUPPORT.desc, phone: D.SUPPORT.phone, email: D.SUPPORT.email, entity: "seyfor-as" })) },
+      { label: "Média", run: () => showCard(renderContact({ kicker: "Média", label: D.GROUP.press.label, desc: D.GROUP.press.desc, contactName: D.GROUP.press.contactName, phone: D.GROUP.press.phone, email: D.GROUP.press.email, note: D.GROUP.press.note, entity: D.GROUP.press.entity })) },
+      { label: "M&A", run: () => showCard(renderContact({ kicker: "M&A", label: D.GROUP.ma.label, desc: D.GROUP.ma.desc, contactName: D.GROUP.ma.contactName, phone: D.GROUP.ma.phone, email: D.GROUP.ma.email, note: D.GROUP.ma.note, entity: D.GROUP.ma.entity })) }
+    ];
+    chips.forEach(chip => {
+      const btn = document.createElement("button");
+      btn.className = "quick-chip";
+      btn.type = "button";
+      btn.textContent = chip.label;
+      btn.addEventListener("click", chip.run);
+      wrap.appendChild(btn);
+    });
+  })();
+
   /* =======================================================================
      PROCHAZECI VRSTVA
      ======================================================================= */
@@ -683,7 +735,7 @@
       '<article class="herocard" aria-label="' + esc(e.name) + '">'
       + '<div class="herocard__left">'
       +   '<span class="herocard__icon" aria-hidden="true">' + ico("solutions") + '</span>'
-      +   '<span class="herocard__kicker">1 &middot; hlavní firma</span>'
+      +   '<span class="herocard__kicker">1 &middot; firma bez vlastní značky</span>'
       +   '<h2 class="herocard__name">' + esc(e.name) + '</h2>'
       +   '<p class="herocard__desc">' + esc(d.desc) + '</p>'
       +   '<p class="herocard__bridge">Součást skupiny Seyfor</p>'
@@ -700,6 +752,7 @@
   // firemni struktura v 5 urovnich: 1. hero karta, 2-5. navazujici skupiny
   (function () {
     const wrap = document.getElementById("companyLevels");
+    const summaryWrap = document.getElementById("companySummary");
     const level2 = ["seyfor-as", "seyfor-cesko"];
     const excluded = ["seyfor-solutions"].concat(level2);
     const groupKeys = (D.GROUP_ENTITIES || []).filter(k => D.ENTITIES[k]);
@@ -708,63 +761,139 @@
     const sk = groupKeys.filter(k => excluded.indexOf(k) < 0 && D.ENTITIES[k].country === "SK").sort(byName);
     const foreign = groupKeys.filter(k => excluded.indexOf(k) < 0 && ["CZ", "SK", "CZ/SK"].indexOf(D.ENTITIES[k].country) < 0).sort(byName);
 
-    function entityButton(k, featured) {
+    function entityButton(k) {
       const e = D.ENTITIES[k];
       if (!e) return null;
-      const icon = k === "seyfor-cesko" ? "products" : "building";
       const btn = document.createElement("button");
-      btn.className = featured ? "etile etile--featured" : "etile";
+      btn.className = "entity-row entity-row--featured";
       btn.type = "button";
       btn.innerHTML =
-        '<span class="etile__icon" aria-hidden="true">' + ico(icon) + '</span>'
-        + '<span class="etile__text"><span class="etile__name">' + esc(e.name) + '</span>'
-        + '<span class="etile__sub">' + esc(entitySubline(e)) + '</span></span>'
-        + '<span class="etile__chev" aria-hidden="true">' + ico("chevron") + '</span>';
+        '<span class="entity-row__name">' + esc(e.name) + '</span>'
+        + '<span class="entity-row__meta">' + esc(entitySubline(e)) + '</span>'
+        + '<span class="entity-row__action">Detail</span>';
+      btn.addEventListener("click", () => showCard(renderEntity(k, { kicker: "Firma" })));
+      return btn;
+    }
+    function entityRow(k) {
+      const e = D.ENTITIES[k];
+      if (!e) return null;
+      const btn = document.createElement("button");
+      btn.className = "entity-row";
+      btn.type = "button";
+      btn.innerHTML =
+        '<span class="entity-row__name">' + esc(e.name) + '</span>'
+        + '<span class="entity-row__meta">' + esc(entitySubline(e)) + '</span>'
+        + '<span class="entity-row__action">Detail</span>';
       btn.addEventListener("click", () => showCard(renderEntity(k, { kicker: "Firma" })));
       return btn;
     }
 
     function appendLevel(number, title, desc, keys, featured) {
       if (!keys.length || !wrap) return;
-      const section = document.createElement("section");
-      section.className = "company-level";
-      section.innerHTML =
-        '<div class="company-level__head">'
+      if (featured) {
+        const section = document.createElement("section");
+        section.className = "company-level";
+        section.dataset.level = number;
+        section.innerHTML =
+          '<div class="company-level__head">'
+          + '<span class="company-level__number">' + esc(number) + '</span>'
+          + '<div class="company-level__text"><h3>' + esc(title) + '</h3>'
+          + '<p>' + esc(desc) + '</p></div>'
+          + '<span class="company-level__count">' + keys.length + '</span>'
+          + '</div>';
+        const grid = document.createElement("div");
+        grid.className = "company-level__grid company-level__grid--featured";
+        keys.forEach(k => {
+          const btn = entityButton(k);
+          if (btn) grid.appendChild(btn);
+        });
+        section.appendChild(grid);
+        wrap.appendChild(section);
+        return;
+      }
+
+      const details = document.createElement("details");
+      details.className = "company-level company-level--folded";
+      details.dataset.level = number;
+      details.innerHTML =
+        '<summary class="company-level__head company-level__summary">'
         + '<span class="company-level__number">' + esc(number) + '</span>'
-        + '<div class="company-level__text"><h3>' + esc(title) + '</h3>'
-        + '<p>' + esc(desc) + '</p></div>'
+        + '<span class="company-level__text"><span class="company-level__title">' + esc(title) + '</span>'
+        + '<span class="company-level__desc">' + esc(desc) + '</span></span>'
         + '<span class="company-level__count">' + keys.length + '</span>'
-        + '</div>';
-      const grid = document.createElement("div");
-      grid.className = featured ? "company-level__grid company-level__grid--featured" : "company-level__grid";
+        + '</summary>';
+      const rows = document.createElement("div");
+      rows.className = "company-level__rows";
       keys.forEach(k => {
-        const btn = entityButton(k, featured);
-        if (btn) grid.appendChild(btn);
+        const row = entityRow(k);
+        if (row) rows.appendChild(row);
       });
-      section.appendChild(grid);
-      wrap.appendChild(section);
+      details.appendChild(rows);
+      wrap.appendChild(details);
     }
 
     appendLevel("2", "Seyfor a Seyfor Products", "Skupinová firma a hlavní česká products firma. Karty uvádějí plné právní názvy.", level2, true);
     appendLevel("3", "Všechny ostatní CZ firmy", "České dceřiné a přidružené společnosti skupiny včetně minoritních podílů.", cz, false);
     appendLevel("4", "Všechny SK firmy", "Slovenské společnosti skupiny a samostatné slovenské značky.", sk, false);
     appendLevel("5", "Všechny zahraniční firmy", "Ostatní zahraniční společnosti mimo Česko a Slovensko.", foreign, false);
+
+    function examples(keys) {
+      return keys.slice(0, 2).map(k => D.ENTITIES[k].shortName || D.ENTITIES[k].name).join(", ");
+    }
+    function openLevel(level) {
+      switchBrowsePanel("panelCompanies");
+      const target = level === "1" ? document.getElementById("browsePrimary") : document.querySelector('[data-level="' + level + '"]');
+      if (target && target.tagName === "DETAILS") target.open = true;
+      if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+    [
+      { level: "1", title: "Seyfor Solutions", meta: "1 firma · bez vlastní značky" },
+      { level: "2", title: "Seyfor a Products", meta: "2 firmy · " + examples(level2) },
+      { level: "3", title: "České firmy", meta: cz.length + " firem · " + examples(cz) },
+      { level: "4", title: "Slovenské firmy", meta: sk.length + " firem · " + examples(sk) },
+      { level: "5", title: "Zahraniční firmy", meta: foreign.length + " firem · " + examples(foreign) }
+    ].forEach(item => {
+      const btn = document.createElement("button");
+      btn.className = "company-summary__item";
+      btn.type = "button";
+      btn.innerHTML =
+        '<span class="company-summary__num">' + esc(item.level) + '</span>'
+        + '<span class="company-summary__text"><strong>' + esc(item.title) + '</strong>'
+        + '<small>' + esc(item.meta) + '</small></span>';
+      btn.addEventListener("click", () => openLevel(item.level));
+      summaryWrap.appendChild(btn);
+    });
   })();
 
   // pobocky
   (function () {
     const wrap = document.getElementById("browseBranches");
     const tabs = document.getElementById("branchTabs");
+    const cityTabs = document.getElementById("branchCityTabs");
     const real = D.BRANCHES.filter(b => !b.placeholder);
     const countries = [
-      { key: "all", label: "Vše", count: real.length },
       { key: "CZ", label: "Česko", count: real.filter(b => b.country === "CZ").length },
-      { key: "SK", label: "Slovensko", count: real.filter(b => b.country === "SK").length }
+      { key: "SK", label: "Slovensko", count: real.filter(b => b.country === "SK").length },
+      { key: "all", label: "Vše", count: real.length }
     ].filter(c => c.count);
-    let active = "all";
+    let active = "CZ";
+    let activeCity = "__primary";
+    let showAllBranches = false;
 
     function presenceCount(branchId) {
       return D.BRANCH_PRESENCE.filter(p => p.branch === branchId).length;
+    }
+    function citySort(a, b) {
+      const priority = { "Praha": 0, "Brno": 1 };
+      const pa = Object.prototype.hasOwnProperty.call(priority, a) ? priority[a] : 2;
+      const pb = Object.prototype.hasOwnProperty.call(priority, b) ? priority[b] : 2;
+      if (pa !== pb) return pa - pb;
+      return a.localeCompare(b, "cs");
+    }
+    function branchSort(a, b) {
+      const city = citySort(a.city, b.city);
+      if (city) return city;
+      return (a.label || a.address || "").localeCompare(b.label || b.address || "", "cs");
     }
     function renderTabs() {
       tabs.innerHTML = "";
@@ -773,16 +902,60 @@
         btn.className = c.key === active ? "branch-tab is-active" : "branch-tab";
         btn.type = "button";
         btn.textContent = c.label + " (" + c.count + ")";
-        btn.addEventListener("click", () => { active = c.key; renderTabs(); renderBranches(); });
+        btn.addEventListener("click", () => {
+          active = c.key;
+          activeCity = "__primary";
+          showAllBranches = false;
+          renderTabs();
+          renderBranches();
+        });
         tabs.appendChild(btn);
+      });
+    }
+    function cityCounts(branches) {
+      return branches.reduce((acc, b) => {
+        acc[b.city] = (acc[b.city] || 0) + 1;
+        return acc;
+      }, {});
+    }
+    function renderCityTabs(filtered) {
+      const counts = cityCounts(filtered);
+      const cities = Object.keys(counts).sort(citySort);
+      if (activeCity !== "__primary" && activeCity !== "__all" && cities.indexOf(activeCity) < 0) activeCity = "__primary";
+      const primaryCount = filtered.filter(b => b.size === "large").length || filtered.length;
+      const items = [
+        { key: "__primary", label: "Hlavní adresy", count: primaryCount },
+        { key: "__all", label: "Všechna města", count: filtered.length }
+      ].concat(cities.map(city => ({ key: city, label: city, count: counts[city] })));
+      cityTabs.innerHTML = "";
+      items.forEach(item => {
+        const btn = document.createElement("button");
+        btn.className = item.key === activeCity ? "branch-city-tab is-active" : "branch-city-tab";
+        btn.type = "button";
+        btn.textContent = item.label + " (" + item.count + ")";
+        btn.addEventListener("click", () => {
+          activeCity = item.key;
+          showAllBranches = false;
+          renderBranches();
+        });
+        cityTabs.appendChild(btn);
       });
     }
     function renderBranches() {
       const filtered = real
         .filter(b => active === "all" || b.country === active)
-        .sort((a, b) => (a.country + a.city + (a.label || "")).localeCompare(b.country + b.city + (b.label || ""), "cs"));
+        .sort(branchSort);
+      renderCityTabs(filtered);
+      const scoped = activeCity === "__all" || activeCity === "__primary"
+        ? filtered
+        : filtered.filter(b => b.city === activeCity);
+      const primary = activeCity === "__all"
+        ? scoped.filter(b => b.size === "large")
+        : activeCity === "__primary" ? scoped.filter(b => b.size === "large") : scoped.filter(b => b.size === "large");
+      const visible = showAllBranches || !primary.length ? scoped : primary;
+      const hiddenCount = scoped.length - visible.length;
       const cities = [];
-      filtered.forEach(b => {
+      visible.forEach(b => {
         let city = cities.find(c => c.country === b.country && c.city === b.city);
         if (!city) {
           city = { country: b.country, city: b.city, branches: [] };
@@ -816,8 +989,19 @@
         section.appendChild(list);
         wrap.appendChild(section);
       });
+      if (hiddenCount > 0 || showAllBranches) {
+        const more = document.createElement("button");
+        more.className = "branch-more";
+        more.type = "button";
+        more.textContent = showAllBranches ? "Zobrazit jen hlavní adresy" : "Zobrazit dalších " + hiddenCount + " menších adres";
+        more.addEventListener("click", () => {
+          showAllBranches = !showAllBranches;
+          renderBranches();
+        });
+        wrap.appendChild(more);
+      }
       document.getElementById("branchCount").textContent =
-        real.length + " fyzických adres · seskupeno podle země a města";
+        filtered.length + " fyzických adres · zobrazeno " + visible.length;
     }
     renderTabs();
     renderBranches();
