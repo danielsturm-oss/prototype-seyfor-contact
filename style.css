@@ -239,27 +239,6 @@ mark {
   color: var(--seyfor-muted);
   font-size: 13px;
 }
-.quick-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 12px;
-}
-.quick-chip {
-  min-height: 34px;
-  padding: 0 13px;
-  border: 1px solid var(--seyfor-border);
-  border-radius: 999px;
-  background: #fff;
-  color: var(--seyfor-teal);
-  font-size: 13px;
-  font-weight: 800;
-  cursor: pointer;
-}
-.quick-chip:hover {
-  border-color: var(--seyfor-border-strong);
-  box-shadow: var(--shadow-sm);
-}
 .sug {
   position: absolute;
   z-index: 40;
@@ -1017,15 +996,6 @@ mark {
   align-self: center;
 }
 .herocard__icon { display: none; }
-.herocard__kicker {
-  display: block;
-  margin: 0 0 7px;
-  color: var(--seyfor-lime);
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: .11em;
-  text-transform: uppercase;
-}
 .herocard__name {
   margin: 0 0 9px;
   color: #fff;

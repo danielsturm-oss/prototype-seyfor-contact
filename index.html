@@ -51,7 +51,6 @@
       <button class="search__clear" id="searchClear" type="button" aria-label="Vymazat hledání" hidden>&times;</button>
     </div>
     <p class="search__hint" id="searchHint" aria-live="polite"></p>
-    <div class="quick-chips" id="quickChips" aria-label="Rychlé cesty"></div>
     <!-- Naseptavac seskupeny PO KATEGORIICH -->
     <div class="sug" id="sugList" role="listbox" aria-label="Návrhy" hidden></div>
   </section>
@@ -698,27 +697,6 @@
     btn.addEventListener("click", () => switchBrowsePanel(btn.dataset.panel));
   });
 
-  (function () {
-    const wrap = document.getElementById("quickChips");
-    const chips = [
-      { label: "Fakturační údaje", run: () => showCard(renderEntity("seyfor-solutions", { kicker: "Firma" })) },
-      { label: "IČO", run: () => { searchInput.value = "01572377"; searchClear.hidden = false; submitSearch(searchInput.value); } },
-      { label: "Praha", run: () => { searchInput.value = "Praha"; searchClear.hidden = false; submitSearch(searchInput.value); } },
-      { label: "Brno", run: () => { searchInput.value = "Brno"; searchClear.hidden = false; submitSearch(searchInput.value); } },
-      { label: "Podpora", run: () => showCard(renderContact({ kicker: "Podpora", label: D.SUPPORT.label, desc: D.SUPPORT.desc, phone: D.SUPPORT.phone, email: D.SUPPORT.email, entity: "seyfor-as" })) },
-      { label: "Média", run: () => showCard(renderContact({ kicker: "Média", label: D.GROUP.press.label, desc: D.GROUP.press.desc, contactName: D.GROUP.press.contactName, phone: D.GROUP.press.phone, email: D.GROUP.press.email, note: D.GROUP.press.note, entity: D.GROUP.press.entity })) },
-      { label: "M&A", run: () => showCard(renderContact({ kicker: "M&A", label: D.GROUP.ma.label, desc: D.GROUP.ma.desc, contactName: D.GROUP.ma.contactName, phone: D.GROUP.ma.phone, email: D.GROUP.ma.email, note: D.GROUP.ma.note, entity: D.GROUP.ma.entity })) }
-    ];
-    chips.forEach(chip => {
-      const btn = document.createElement("button");
-      btn.className = "quick-chip";
-      btn.type = "button";
-      btn.textContent = chip.label;
-      btn.addEventListener("click", chip.run);
-      wrap.appendChild(btn);
-    });
-  })();
-
   /* =======================================================================
      PROCHAZECI VRSTVA
      ======================================================================= */
@@ -731,7 +709,6 @@
       '<article class="herocard" aria-label="' + esc(e.name) + '">'
       + '<div class="herocard__left">'
       +   '<span class="herocard__icon" aria-hidden="true">' + ico("solutions") + '</span>'
-      +   '<span class="herocard__kicker">1</span>'
       +   '<h2 class="herocard__name">' + esc(e.name) + '</h2>'
       +   '<p class="herocard__desc">' + esc(d.desc) + '</p>'
       +   '<p class="herocard__bridge">Součást skupiny Seyfor</p>'
@@ -1003,8 +980,8 @@
   const topSearchIcon = document.querySelector(".site-actions__search");
   if (topSearchIcon) topSearchIcon.innerHTML = ico("search");
   document.getElementById("footLegal").innerHTML =
-    'Seyfor je skupina samostatných právních osob. Provozovatelem tohoto webu je <strong>Seyfor, a. s.</strong> '
-    + 'Smluvní strana se liší podle vybrané služby; konkrétní firmu a IČO ukazujeme vždy na kartě dané služby.';
+    'Seyfor je skupina samostatných právních osob. Smluvní strana se liší podle vybrané služby; '
+    + 'konkrétní firmu a IČO ukazujeme vždy na kartě dané služby.';
 
 })();
 </script>
