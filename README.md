@@ -4,7 +4,7 @@ Klikací prototyp kontaktní sekce webu seyfor.com. Čistě statický web (HTML/
 
 Součást projektu P-SWR (Seyfor Web Redesign).
 
-## Model: akčně-vyhledávací (revize 2026-06-29)
+## Model: akčně-vyhledávací (revize 2026-06-30)
 
 Kontaktní cesta NENÍ akviziční. Žádný lead formulář nikde. Primární vstup je
 jedno univerzální vyhledávací pole, které rozpozná typ vstupu a vrátí kartu,
@@ -13,7 +13,7 @@ jejíž hlavní prvek je AKCE (Volat / Kopírovat / Navigovat), ne odkaz.
 ### Detekce typu vstupu a routování
 - jméno osoby → karta s tlačítkem **Volat recepci** pobočky (tap-to-call, `tel:`)
 - značka (iDoklad, Dotykačka) → provozovatel + **Fakturační údaje** + podpora (směrovka)
-- firma (Seyfor a.s., Seyfor Česko) → **Fakturační údaje** + Kopírovat / Zobrazit velké
+- firma (Seyfor Solutions, a. s., Seyfor, a. s., Seyfor Česko, a. s.) → **Fakturační údaje** + Kopírovat / Zobrazit velké
 - IČO (6 až 8 číslic) → obrácený lookup → potvrzení „Ano, je to Seyfor" + údaje
 - město / pobočka (Praha, Rustonka) → mapa + tlačítko **Navigovat** (deep-link)
 - nejasné → záchytná síť (obecný kontakt) + návrhy
@@ -33,12 +33,12 @@ Tiché vstupy: Podpora, Pro média, M&A (jen kontaktní karta), Kariéra (jen ko
 karta), Právní info, Obecný kontakt. M&A i Kariéra jsou pouze kontaktní karta.
 
 ### Tichý most veřejná vrstva → smluvní strana
-Každá karta nese vzorec „Smluvní strana: [firma] s.r.o., IČ […]" z lookupu (SSOT).
-Hlavní obsah jen u fakturace (UC2), obrácený u firmy → značka.
+Relevantní karty ukazují smluvní stranu a IČO z lookupu (SSOT). U značek most
+funguje směrem značka → právnická osoba; u firem je hlavní obsah fakturace (UC2).
 
 ## Soubory
 - `index.html` - vstupní stránka + aplikační logika (search, detekce typu, render karet)
-- `style.css` - styly a brandové tokeny (ze skillu `seyfor-corporate-design`)
+- `style.css` - styly, brandové tokeny a responzivní layout
 - `data.js` - datová vrstva (SSOT): ENTITIES, DIVISIONS, BRANDS, BRANCHES + BRANCH_PRESENCE, PEOPLE
 - `assets/` - loga, reálné Seyfor ikony jsou inline SVG v `index.html`
 
